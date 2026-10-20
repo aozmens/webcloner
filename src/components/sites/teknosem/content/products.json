@@ -302,7 +302,7 @@
     "documents": [
       {
         "name": "TY-700-Multi-Axis_V1.1",
-        "src": "/sites/teknosem/dokumanlar/TY-700-Multi-Axis_V1.1.pdf"
+        "src": "/sites/teknosem/dokumanlar/ty-700-multi-axis-spreyleme-unitesi/TY-700-Multi-Axis_V1.1.pdf"
       }
     ],
     "seo": {
@@ -916,7 +916,7 @@
     "documents": [
       {
         "name": "A-2004_V1.1",
-        "src": "/sites/teknosem/dokumanlar/A-2004_V1.1.pdf"
+        "src": "/sites/teknosem/dokumanlar/vakusem-a-2004/A-2004_V1.1.pdf"
       }
     ],
     "seo": {
@@ -999,7 +999,7 @@
     "documents": [
       {
         "name": "TY-700_V1.3",
-        "src": "/sites/teknosem/dokumanlar/TY-700_V1.3.pdf"
+        "src": "/sites/teknosem/dokumanlar/ty-700-spreyleme-unitesi/TY-700_V1.3.pdf"
       }
     ],
     "seo": {
@@ -1233,12 +1233,7 @@
         "height": 1800
       }
     ],
-    "documents": [
-      {
-        "name": "TK-5_V1.5",
-        "src": "/sites/teknosem/dokumanlar/TK-5_V1.5.pdf"
-      }
-    ],
+    "documents": [],
     "seo": {
       "title": "TEKNOSEM TK-7 Otomatik Kepçe - Teknosem",
       "description": "  Yüksek basınçlı döküm (HPDC) sistemleri için tasarlanmış, gelişmiş bir otomatik alüminyum besleme robotudur. Büyük ölçekli üretim ihtiyaçlarına yanıt vermek üzere tasarlanan TK-7, yüksek hassasiyet ve üstün hız özellikleriyle alüminyum döküm süreçlerinde verimliliği ve kaliteyi maksimize eder. Otomatik kepçe sistemi sayesinde, döküm işlemlerinde insan hatasını ortadan kaldırarak iş güvenliğini artırır ve süreçleri hızlandırır. Daha büyük kapasitesi ve dayanıklılığı ile TK-7, HPDC sistemlerinde en zorlu üretim koşullarına uyum sağlayan güvenilir bir çözüm sunar. Üretim hattınızın performansını optimize etmek ve yüksek hacimli döküm işlemlerinde mükemmel sonuçlar elde etmek için TK-7 modelini keşfedin.        "
@@ -1542,7 +1537,7 @@
     "documents": [
       {
         "name": "TK-5_V1.5",
-        "src": "/sites/teknosem/dokumanlar/TK-5_V1.5.pdf"
+        "src": "/sites/teknosem/dokumanlar/tk-5/TK-5_V1.5.pdf"
       }
     ],
     "seo": {
@@ -1619,7 +1614,7 @@
     "documents": [
       {
         "name": "TY-1000_V1.12",
-        "src": "/sites/teknosem/dokumanlar/TY-1000_V1.12.pdf"
+        "src": "/sites/teknosem/dokumanlar/ty-1000/TY-1000_V1.12.pdf"
       }
     ],
     "seo": {
@@ -1689,7 +1684,7 @@
     "documents": [
       {
         "name": "A-1001_V1.11",
-        "src": "/sites/teknosem/dokumanlar/A-1001_V1.11.pdf"
+        "src": "/sites/teknosem/dokumanlar/a-1001/A-1001_V1.11.pdf"
       }
     ],
     "seo": {

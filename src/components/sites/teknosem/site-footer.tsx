@@ -1,6 +1,6 @@
 import { ArrowRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { catalog, categoryHref, company, pages } from "./content";
+import { catalog, categoryHref, company, pageHref, pages } from "./content";
 import { CurrentYear } from "./current-year";
 import { TeknosemLogo } from "./logo";
 
@@ -12,14 +12,14 @@ const columns: FooterColumn[] = [
     title: category.title,
     links: category.groups.map((group) => ({ label: group.title, href: categoryHref(category, group) })),
   })),
-  { title: "Kurumsal", links: [pages.about, pages.contact, pages.quote, pages.services, pages.kvkk].map(({ label, href }) => ({ label, href })) },
+  { title: "Kurumsal", links: (["about", "contact", "quote", "services", "kvkk"] as const).map((key) => ({ label: pages[key].label, href: pageHref(key) })) },
   {
     title: "İletişim",
     links: [
       { label: `Arayın: ${company.phone}`, href: company.phoneHref },
       { label: `Mail gönderin: ${company.email}`, href: `mailto:${company.email}` },
       { label: `WhatsApp: ${company.whatsapp}`, href: company.whatsappHref },
-      { label: company.address, href: pages.contact.href },
+      { label: company.address, href: pageHref("contact") },
     ],
   },
 ];
@@ -61,7 +61,7 @@ export function SiteFooter() {
       </span>
       <span className="last-elem-footer"> {company.legalName} </span>
       <span className="last-elem-footer"> {company.city} </span>
-      <a href={pages.kvkk.href} className="last-elem-footer">
+      <a href={pageHref("kvkk")} className="last-elem-footer">
         KVKK
       </a>
     </footer>

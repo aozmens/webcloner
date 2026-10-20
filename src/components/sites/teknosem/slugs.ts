@@ -50,11 +50,12 @@ type Redirect = {
  * Sources and destinations are relative to this app; Next prefixes both with basePath. When the app itself is
  * served under the old prefix (basePath "/robotik"), the old paths lose that prefix and identical paths are skipped.
  */
-export function legacyRedirects({ basePath, legacyBase, catalog, legacyCategoryPaths }: {
+export function legacyRedirects({ basePath, legacyBase, catalog, legacyCategoryPaths, pages }: {
   basePath: string;
   legacyBase: string;
   catalog: { slug: string }[];
   legacyCategoryPaths: Record<string, { category: string; group?: string }>;
+  pages: { path: string; legacy: readonly string[] }[];
 }): Redirect[] {
   const prefix = basePath === legacyBase ? "" : legacyBase;
   const redirects: Redirect[] = [];
@@ -76,6 +77,13 @@ export function legacyRedirects({ basePath, legacyBase, catalog, legacyCategoryP
 
   for (const [legacyPath, place] of Object.entries(legacyCategoryPaths)) {
     add(`${prefix}/urun-kategorisi/${legacyPath}`, `/urunler/${place.category}${place.group ? `#${place.group}` : ""}`);
+  }
+
+  // Old home page (only when the app is not itself served under the old prefix).
+  if (prefix) add(prefix, "/");
+
+  for (const page of pages) {
+    for (const legacyPath of page.legacy) add(`${prefix}${legacyPath}`, page.path);
   }
 
   for (const [oldSlug, slug] of Object.entries(productSlugs)) {

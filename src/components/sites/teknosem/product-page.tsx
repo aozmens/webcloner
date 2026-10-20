@@ -1,6 +1,6 @@
 import { FileDown } from "lucide-react";
 import Link from "next/link";
-import { categoryHref, pages, productHref, productPlacement, productsHref, type Product } from "./content";
+import { categoryHref, pageHref, pages, productHref, productPlacement, productsHref, type Product } from "./content";
 import { ExpertSection } from "./home-sections";
 import { LineElement, PrimaryButton, ProductThumb } from "./primitives";
 import { ProductGallery } from "./product-gallery";
@@ -72,11 +72,11 @@ export function ProductPage({ product }: { product: Product }) {
           </h1>
           <p className="paragraph-1 text-start">{product.shortDescription}</p>
           <div className="product-actions">
-            <PrimaryButton href={pages.quote.href}>{pages.quote.label}</PrimaryButton>
+            <PrimaryButton href={`${pageHref("quote")}?urun=${product.slug}`}>{pages.quote.label}</PrimaryButton>
             {product.documents.map((doc) => (
               <a key={doc.src} className="secondary-btn" href={doc.src} target="_blank" rel="noopener" download>
                 <FileDown aria-hidden strokeWidth={1.5} />
-                Kullanım Kılavuzu ({doc.name})
+                Kullanım Kılavuzu ({doc.model}, {doc.version})
               </a>
             ))}
           </div>

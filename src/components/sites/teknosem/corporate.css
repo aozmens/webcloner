@@ -1,0 +1,96 @@
+/* Teknosem corporate pages (Hakkımızda, Hizmetler, Referanslar, İndirmeler, İletişim, Teklif Al, Servis Talebi,
+   İK, KVKK). Builds on product.css (hero, breadcrumb, prose, secondary buttons) and the inherited form fields. */
+
+.corporate-hero.with-image{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:center}
+.corporate-hero .catalog-intro{max-width:calc(var(--fs) * 64)}
+.corporate-image{border-radius:calc(var(--fs) * 1.875);overflow:hidden;background:#111}
+.corporate-image img{width:100%;height:auto;object-fit:cover}
+.corporate-tagline{color:var(--MAIN-BLUE);font-size:calc(var(--fs) * 1.375);font-weight:500}
+.corporate-subtitle{color:#fff;font-size:calc(var(--fs) * 1.375);font-weight:500;margin:calc(var(--fs) * 1.25) 0 calc(var(--fs) * .75)}
+
+.corporate-section{min-height:unset;padding:calc(var(--fs) * 3.5) calc(var(--hor-padding) * 1.5)}
+.corporate-section > .h2{margin-bottom:calc(var(--fs) * 2)}
+.corporate-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);column-gap:calc(var(--fs) * 5);row-gap:calc(var(--fs) * 2);align-items:start}
+.corporate-split .h2{margin:calc(var(--fs) * 1) 0}
+.corporate-split .paragraph-1{line-height:1.5}
+
+.corporate-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--fs) * 1.5)}
+.corporate-card{display:flex;flex-direction:column;gap:calc(var(--fs) * 1);padding:calc(var(--fs) * 2);border-radius:calc(var(--fs) * 1.25)}
+.corporate-card .shade{top:0;right:0;transform:translate(50%,-60%)}
+.corporate-card .card-icon{width:calc(var(--fs) * 4);height:calc(var(--fs) * 4)}
+.corporate-card h3{color:#fff;font-size:calc(var(--fs) * 1.375);font-weight:500;line-height:1.25}
+.corporate-card p{color:#cbcbcb;font-size:var(--fs);line-height:1.5}
+
+.reference-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:calc(var(--fs) * 1.1)}
+.reference-grid .logo-tile{display:flex;align-items:center;justify-content:center;aspect-ratio:3/2;border-radius:calc(var(--fs) * .875);background:#fff;padding:calc(var(--fs) * .9)}
+.reference-grid .logo-tile img{width:100%;height:100%;object-fit:contain}
+
+.download-list{list-style:none;padding:0;display:grid;gap:calc(var(--fs) * .9);max-width:calc(var(--fs) * 72)}
+.download-item{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:calc(var(--fs) * 1.5);padding:calc(var(--fs) * 1.25) calc(var(--fs) * 1.75);border-radius:calc(var(--fs) * 1.1)}
+.download-icon{width:calc(var(--fs) * 2.4);height:calc(var(--fs) * 2.4);color:var(--MAIN-BLUE)}
+.download-info{display:grid;gap:calc(var(--fs) * .3)}
+.download-info strong{color:#fff;font-size:calc(var(--fs) * 1.25);font-weight:500}
+.download-info span{color:#969696;font-size:calc(var(--fs) * .95)}
+.download-info a{color:#cbcbcb}
+.download-info a:hover{color:#fff}
+
+.contact-list{list-style:none;padding:0;display:grid;gap:calc(var(--fs) * .9);margin:calc(var(--fs) * .5) 0}
+.contact-list a{display:flex;align-items:center;gap:calc(var(--fs) * .9);color:#fff;font-size:calc(var(--fs) * 1.25)}
+.contact-list a:hover{color:var(--MAIN-BLUE)}
+.contact-list svg{width:calc(var(--fs) * 1.5);height:calc(var(--fs) * 1.5);color:var(--MAIN-BLUE);flex-shrink:0}
+.map-frame{aspect-ratio:21/8;border-radius:calc(var(--fs) * 1.875);overflow:hidden;background:#121212;position:relative}
+/* The inherited base makes every iframe a click-through background layer; the map must stay interactive */
+.map-frame iframe{position:absolute;inset:0;top:0;left:0;transform:none;width:100%;height:100%;pointer-events:auto;border:0;filter:grayscale(.35)}
+
+.process-steps{list-style:none;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--fs) * 1.5)}
+.process-steps li{display:grid;gap:calc(var(--fs) * .6);padding:calc(var(--fs) * 2);border-radius:calc(var(--fs) * 1.25)}
+.process-steps .step-number{color:var(--MAIN-BLUE);font-size:calc(var(--fs) * 2.5);font-weight:500;line-height:1}
+.process-steps strong{color:#fff;font-size:calc(var(--fs) * 1.375);font-weight:500}
+.process-steps p{color:#cbcbcb;font-size:var(--fs);line-height:1.5}
+
+.apply-box{display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--fs) * 1.25)}
+.apply-mail{display:inline-flex;align-items:center;gap:calc(var(--fs) * .9);color:#fff;font-size:calc(var(--fs) * 2);font-weight:500}
+.apply-mail:hover{color:var(--MAIN-BLUE)}
+.apply-mail svg{width:calc(var(--fs) * 2);height:calc(var(--fs) * 2);color:var(--MAIN-BLUE)}
+
+.legal-text{max-width:calc(var(--fs) * 76)}
+.legal-text h2{font-size:calc(var(--fs) * 1.625)}
+.product-prose ul.lettered{list-style:none}
+.product-prose ul.lettered li{padding-left:0}
+.product-prose ul.lettered li:before{display:none}
+
+/* Forms: the inherited .field-wrapper / .field styles, laid out on a two-column grid */
+.whatsapp-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--fs) * 1.25) calc(var(--fs) * 1.5)}
+.whatsapp-form .field-wrapper label{color:#cbcbcb;font-size:var(--fs);text-transform:none}
+.whatsapp-form .field-wrapper .field{width:100%;height:calc(var(--fs) * 3.25)}
+.whatsapp-form .field-wrapper.textarea .field{height:auto}
+.whatsapp-form .field input,.whatsapp-form .field select,.whatsapp-form .field textarea{color:#fff;font-size:calc(var(--fs) * 1.05);width:100%;height:100%;background:#d9d9d90d;border-radius:inherit}
+.whatsapp-form .field textarea{min-height:calc(var(--fs) * 11)!important;font-family:inherit}
+.whatsapp-form .field select{padding-right:calc(var(--fs) * 1)}
+.whatsapp-form .form-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:calc(var(--fs) * 2);flex-wrap:wrap}
+.whatsapp-form .form-note{color:#969696;font-size:calc(var(--fs) * .9);max-width:calc(var(--fs) * 34);line-height:1.45}
+.whatsapp-form .form-note a{color:#cbcbcb;text-decoration:underline!important}
+.whatsapp-form button.primary-btn{cursor:pointer}
+
+@media(orientation:portrait){
+  .corporate-hero.with-image{grid-template-columns:100%}
+  .corporate-section{padding:calc(var(--fs) * 2.5) var(--hor-padding)}
+  .corporate-split{grid-template-columns:100%}
+  .corporate-cards,.process-steps{grid-template-columns:100%;gap:calc(var(--fs) * .8)}
+  .corporate-card{padding:calc(var(--fs) * 1.25)}
+  .corporate-card p,.process-steps p{font-size:calc(var(--fs) * .9)}
+  .corporate-card h3,.process-steps strong{font-size:calc(var(--fs) * 1.1)}
+  .reference-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--fs) * .6)}
+  .download-item{grid-template-columns:max-content minmax(0,1fr);padding:calc(var(--fs) * 1)}
+  .download-item .secondary-btn{grid-column:1/-1;justify-self:start}
+  .download-info strong{font-size:calc(var(--fs) * 1.05)}
+  .download-info span{font-size:calc(var(--fs) * .8)}
+  .contact-list a{font-size:calc(var(--fs) * .95)}
+  .map-frame{aspect-ratio:4/3}
+  .apply-mail{font-size:calc(var(--fs) * 1.25)}
+  .whatsapp-form{grid-template-columns:100%}
+  .whatsapp-form .field-wrapper.textarea{grid-column:auto}
+  .whatsapp-form .field-wrapper label{font-size:calc(var(--fs) * .85)}
+  .whatsapp-form .field-wrapper .field{height:calc(var(--fs) * 3)}
+  .whatsapp-form .form-note{font-size:calc(var(--fs) * .8)}
+}

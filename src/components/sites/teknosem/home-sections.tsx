@@ -1,6 +1,6 @@
 import { ArrowRight, Award, Box, ChevronsDown, FlaskConical, KeyRound, PackageCheck, PenTool, ShieldCheck, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import { leadSentence, media, pages, product, productHref, productsHref, type ImageAsset } from "./content";
+import { leadSentence, media, pageHref, pages, product, productHref, productsHref, type ImageAsset } from "./content";
 import { LineElement, Picture, PrimaryButton } from "./primitives";
 
 const mediaByName = (list: ImageAsset[], name: string) => {
@@ -273,7 +273,7 @@ export function ReferencesStrip() {
     <section id="references-strip" aria-label="Referanslarımız">
       <div className="head">
         <h2 className="h2">Referanslarımız</h2>
-        <a href={pages.references.href} className="own-link">
+        <a href={pageHref("references")} className="own-link">
           {pages.references.label}
         </a>
       </div>
@@ -301,7 +301,7 @@ export function ExpertSection() {
         Bilgi almak için veya teknik sorunlar ve kurulum talepleriniz için iletişim formunu doldurarak ya da iletişim bilgilerimizi kullanarak
         bizimle iletişime geçebilirsiniz.
       </p>
-      <PrimaryButton href={pages.contact.href}>Uzmanlarımıza Danışın</PrimaryButton>
+      <PrimaryButton href={pageHref("contact")}>Uzmanlarımıza Danışın</PrimaryButton>
     </section>
   );
 }

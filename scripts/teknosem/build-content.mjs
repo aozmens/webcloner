@@ -67,6 +67,13 @@ function parseCsv(text) {
 // Images are regenerated from scratch so renamed or dropped sources do not linger in public/.
 for (const dir of ["urunler", "kurumsal", "referanslar", "dokumanlar"]) fs.rmSync(path.join(PUBLIC, dir), { recursive: true, force: true });
 
+/**
+ * Source PDFs that are kept out of public/ on purpose (see docs/research/teknosem/TODO.md and
+ * product-overrides.ts). The TK-7 folder holds a different file that is also named TK-5_V1.5.pdf: its cover
+ * says TK-5 and TK-7 is never mentioned, so it is not published until its model is confirmed.
+ */
+const UNPUBLISHED_DOCUMENTS = { "teknosem-tk-7-otomatik-kepce-kopya": ["TK-5_V1.5.pdf"] };
+
 const csv = parseCsv(fs.readFileSync(path.join(SRC, "00_Urun_Listesi.csv"), "utf8").replace(/^﻿/, ""));
 const header = csv[0];
 const col = (name) => header.indexOf(name);
@@ -79,7 +86,11 @@ for (const r of csv.slice(1)) {
   const slug = sourceUrl.replace(/\/$/, "").split("/").pop();
   const docsDir = path.join(folder, "dokumanlar");
   const documents = fs.existsSync(docsDir)
-    ? fs.readdirSync(docsDir).filter((f) => f.endsWith(".pdf")).map((f) => ({ name: f.replace(/\.pdf$/, ""), src: copyFile(path.join(docsDir, f), path.join("dokumanlar", f)) }))
+    ? fs
+        .readdirSync(docsDir)
+        .filter((f) => f.endsWith(".pdf") && !(UNPUBLISHED_DOCUMENTS[slug] ?? []).includes(f))
+        // One folder per product: two different source files are both named TK-5_V1.5.pdf (TK-5 and TK-7 folders).
+        .map((f) => ({ name: f.replace(/\.pdf$/, ""), src: copyFile(path.join(docsDir, f), path.join("dokumanlar", slug, f)) }))
     : [];
   products.push({
     no: Number(r[col("No")]),
@@ -123,6 +134,15 @@ async function placeholder(label, file) {
 }
 
 const placeholders = { "ty-2000": await placeholder("TY-2000", "ty-2000.webp") };
+
+/** "Sayfa Metni" section of a corporate page, split into paragraphs. */
+function pageText(dir) {
+  const md = fs.readFileSync(path.join(kurumsal, dir, "icerik.md"), "utf8");
+  const body = md.split("## Sayfa Metni")[1].split(/\n## (Bağlantılar|Görseller|Gömülü)/)[0];
+  return body.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+}
+
+fs.writeFileSync(path.join(OUT, "kvkk.json"), JSON.stringify(pageText("04_KVKK"), null, 2) + "\n");
 
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "placeholders.json"), JSON.stringify(placeholders, null, 2) + "\n");

@@ -4,12 +4,13 @@
 import mediaJson from "./content/media.json";
 import productsJson from "./content/products.json";
 import { catalog, shortNames, type CatalogCategory, type CatalogGroup } from "./catalog";
-import { productOverrides } from "./product-overrides";
+import { productOverrides, type ManualInfo } from "./product-overrides";
 import { withBase } from "./site-config";
 import { productSlugs } from "./slugs";
 
-export { company, corporateLinks, pages, SOURCE_ORIGIN } from "./company";
+export { company, corporateLinks, pageHref, pages, SOURCE_ORIGIN, type PageKey } from "./company";
 
+export type Manual = ManualInfo & { name: string; src: string };
 export type ImageAsset = { src: string; width: number; height: number };
 export type ProductTab = { title: string; markdown: string; videos: string[] };
 export type Product = {
@@ -25,7 +26,7 @@ export type Product = {
   tabs: ProductTab[];
   videos: string[];
   images: ImageAsset[];
-  documents: { name: string; src: string }[];
+  documents: Manual[];
   seo: { title: string; description: string };
 };
 
@@ -51,7 +52,7 @@ function correct(slug: string, text: string) {
   return (corrections[slug] ?? []).reduce((value, [from, to]) => value.split(from).join(to), text);
 }
 
-type RawProduct = Omit<Product, "sourceSlug">;
+type RawProduct = Omit<Product, "sourceSlug" | "documents"> & { documents: { name: string; src: string }[] };
 
 export const products: Product[] = (productsJson as RawProduct[]).map((raw) => {
   const slug = productSlugs[raw.slug];
@@ -68,7 +69,11 @@ export const products: Product[] = (productsJson as RawProduct[]).map((raw) => {
       .filter((tab, index) => !(override?.hideSpecs && index === 1))
       .map((tab) => ({ ...tab, markdown: correct(slug, tab.markdown) })),
     images: images.map((image) => ({ ...image, src: withBase(image.src) })),
-    documents: documents.map((doc) => ({ ...doc, src: withBase(doc.src) })),
+    documents: documents.map((doc) => {
+      // Every published manual must have its model and version confirmed from the PDF itself.
+      if (!override?.manual) throw new Error(`Manual of ${slug} has no confirmed model/version in product-overrides.ts`);
+      return { ...doc, ...override.manual, src: withBase(doc.src) };
+    }),
     seo: { ...raw.seo, description: correct(slug, raw.seo.description) },
   };
 });
@@ -92,9 +97,7 @@ export const shortName = (p: Product) => shortNames[p.slug] ?? p.name;
  * İndirmeler list, derived from the product data so it only links to files that exist and follows the
  * per-product decisions (e.g. TY-1000 → TY-1000_V1.12, no TK-5 manual under TK-7).
  */
-export const manuals = products.flatMap((p) => p.documents.map((doc) => ({ ...doc, product: p }))).filter(
-  (manual, index, list) => list.findIndex((other) => other.src === manual.src) === index,
-);
+export const manuals = products.flatMap((p) => p.documents.map((doc) => ({ ...doc, product: p })));
 
 /** First sentence of a text, used where the layout only has room for a lead sentence. */
 export function leadSentence(text: string) {
