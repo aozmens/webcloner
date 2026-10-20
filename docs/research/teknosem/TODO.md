@@ -29,10 +29,12 @@ Kod tarafındaki karşılıkları: `src/components/sites/teknosem/product-overri
 Kaynağın İndirmeler sayfasında olup arşivde dosyası olmayanlar listeden çıkarıldı: A-1001_V1.12, TK-5_V1.4, TY-1000_V1.11, TY-700_V1.1, teknosem-001, teknosem-002.
 
 ## Karar bekleyen
+- [ ] **Tasarım Dili görseli ve logo** — gelmedi. Renk ve tipografi referans klondaki gibi; logo geçici yazı logosu (`logo.tsx`), favicon geçici "T" ikonu (`src/app/icon.svg`). Gelince bu iki dosya ve `teknosem-adaptation.css` güncellenir.
+- [ ] **Teklif Al metni** — kaynaktaki "laboratuvar çözümleri" ifadesi ana Teknosem sitesinden kalmış görünüyor; içerik olduğu gibi kullanılıyor.
 - [x] **Yıl bilgisi** — 32 yıl (1994'ten beri) olarak karar verildi; `company.ts` → `experienceYears` sabitinden her yere (ana sayfa ×2, Hakkımızda) uygulanıyor. Her yıl elle güncellenmeli.
-- [ ] **YouTube** — footer'daki hangi sosyal medyanın yerine geçeceği ve gerçek kanal adresi.
-- [ ] **Yayın şekli** — kök / alt alan adı / `/robotik`. `NEXT_PUBLIC_TEKNOSEM_BASE_PATH` ve `NEXT_PUBLIC_TEKNOSEM_SITE_URL` ile ayarlanır; alan adı verilince canonical ve paylaşım görselleri otomatik açılır.
-- [ ] **Git geçmişindeki eski klon varlıkları** — WebP öncesi görseller temizlendi (paket ≈69 MB). İlk commit'te silinmiş AI Robots varlıkları (≈20 MB) duruyor; istenirse onlar da temizlenebilir.
+- [x] **YouTube** — hiçbir hesap çıkarılmadan footer'a 4. bağlantı olarak eklendi. Adres içerikteki `https://www.youtube.com/@TeknosemTest` (kaynakta verilen tek adres). Kanal adı test hesabı gibi duruyor: gerçek kanal adresi gelirse `company.ts` → `social.youtube` güncellenir.
+- [x] **Yayın şekli** — varsayılan **kök** (değişken gerekmez). `/robotik` altında yayın için `NEXT_PUBLIC_TEKNOSEM_BASE_PATH=/robotik`. Alan adı belli olunca `NEXT_PUBLIC_TEKNOSEM_SITE_URL` (ör. `https://teknosem.com.tr`) verilmeli; canonical, paylaşım görseli ve `sitemap.xml` ancak o zaman üretilir.
+- [x] **Git geçmişi** — WebP öncesi görseller ve silinmiş AI Robots varlıkları geçmişten temizlendi.
 
 ## Ortak kullanılan görseller (şimdilik bilinçli olarak bırakıldı)
 - `polisaj-2.jpg` → Robotik Polisaj, Robotik Zımpara, TPM-1000

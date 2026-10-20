@@ -28,6 +28,7 @@ const socialLinks = [
   { label: "Instagram", href: company.social.instagram, className: "bottom-link" },
   { label: "Linkedin", href: company.social.linkedin, className: "bottom-link desc-link" },
   { label: "Facebook", href: company.social.facebook, className: "bottom-link" },
+  { label: "YouTube", href: company.social.youtube, className: "bottom-link" },
 ];
 
 export function SiteFooter() {

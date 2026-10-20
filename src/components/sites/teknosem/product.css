@@ -103,3 +103,7 @@
   .related-card{font-size:calc(var(--fs) * .95);padding:calc(var(--fs) * .8)}
   .secondary-btn{font-size:calc(var(--fs) * .875);height:calc(var(--fs) * 2.3)}
 }
+
+/* 404 */
+.not-found{min-height:70vh;align-content:center}
+.not-found .corporate-tagline{color:var(--MAIN-BLUE);font-size:calc(var(--fs) * 1.375);font-weight:500}
