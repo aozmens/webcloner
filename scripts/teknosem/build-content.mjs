@@ -1,9 +1,10 @@
-// Builds the Teknosem site data from docs/teknosem-icerik (read-only source).
-// Writes src/components/sites/teknosem/content/*.json and copies images/PDFs into public/sites/teknosem/.
-// Usage: node scripts/teknosem/build-content.mjs
+// Builds the Teknosem site data from docs/teknosem-icerik (read-only source, not tracked in git).
+// Writes src/components/sites/teknosem/content/*.json, converts images to resized WebP and copies PDFs
+// into public/sites/teknosem/. Usage: node scripts/teknosem/build-content.mjs
 
 import fs from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1")), "../..");
 const SRC = path.join(root, "docs/teknosem-icerik");
@@ -11,44 +12,36 @@ const PUBLIC = path.join(root, "public/sites/teknosem");
 const OUT = path.join(root, "src/components/sites/teknosem/content");
 const URL_BASE = "/sites/teknosem";
 
-function imageSize(file) {
-  const b = fs.readFileSync(file);
-  if (b.subarray(1, 4).toString() === "PNG") return [b.readUInt32BE(16), b.readUInt32BE(20)];
-  if (b[0] === 0xff && b[1] === 0xd8) {
-    let i = 2;
-    while (i < b.length) {
-      if (b[i] !== 0xff) { i++; continue; }
-      const marker = b[i + 1];
-      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)];
-      i += 2 + b.readUInt16BE(i + 2);
-    }
-  }
-  if (b.subarray(8, 12).toString() === "WEBP") {
-    const chunk = b.subarray(12, 16).toString();
-    if (chunk === "VP8X") return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
-    if (chunk === "VP8 ") return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
-    if (chunk === "VP8L") { const n = b.readUInt32LE(21); return [1 + (n & 0x3fff), 1 + ((n >> 14) & 0x3fff)]; }
-  }
-  throw new Error(`Unknown image format: ${file}`);
+/** Longest edge per image family; next/image derives the smaller responsive variants from these. */
+const MAX_EDGE = { product: 1800, home: 2560, corporate: 1600, reference: 480 };
+const WEBP = { quality: 80, effort: 5 };
+
+const publicUrl = (relative) => `${URL_BASE}/${relative.split(path.sep).join("/")}`;
+
+async function toWebp(from, toRelative, maxEdge) {
+  const target = path.join(PUBLIC, toRelative.replace(/\.(jpe?g|png|webp)$/i, ".webp"));
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const info = await sharp(from).rotate().resize({ width: maxEdge, height: maxEdge, fit: "inside", withoutEnlargement: true }).webp(WEBP).toFile(target);
+  return { src: publicUrl(path.relative(PUBLIC, target)), width: info.width, height: info.height };
 }
 
-function copy(from, toRelative) {
+async function convertImages(dir, targetDir, maxEdge) {
+  if (!fs.existsSync(dir)) return [];
+  const files = fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort();
+  const images = [];
+  for (const file of files) {
+    const meta = await sharp(path.join(dir, file)).metadata();
+    if ((meta.width ?? 0) < 2) continue; // WordPress slider placeholder (1x1)
+    images.push(await toWebp(path.join(dir, file), path.join(targetDir, file.toLowerCase()), maxEdge));
+  }
+  return images;
+}
+
+function copyFile(from, toRelative) {
   const to = path.join(PUBLIC, toRelative);
   fs.mkdirSync(path.dirname(to), { recursive: true });
-  if (!fs.existsSync(to) || fs.statSync(to).size !== fs.statSync(from).size) fs.copyFileSync(from, to);
-  return `${URL_BASE}/${toRelative.split(path.sep).join("/")}`;
-}
-
-function copyImages(dir, targetDir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
-    .sort()
-    .map((f) => {
-      const [width, height] = imageSize(path.join(dir, f));
-      return { src: copy(path.join(dir, f), path.join(targetDir, f.toLowerCase())), width, height };
-    });
+  fs.copyFileSync(from, to);
+  return publicUrl(toRelative);
 }
 
 function parseCsv(text) {
@@ -71,44 +64,49 @@ function parseCsv(text) {
   return rows.filter((r) => r.length > 1);
 }
 
+// Images are regenerated from scratch so renamed or dropped sources do not linger in public/.
+for (const dir of ["urunler", "kurumsal", "referanslar", "dokumanlar"]) fs.rmSync(path.join(PUBLIC, dir), { recursive: true, force: true });
+
 const csv = parseCsv(fs.readFileSync(path.join(SRC, "00_Urun_Listesi.csv"), "utf8").replace(/^﻿/, ""));
 const header = csv[0];
 const col = (name) => header.indexOf(name);
 
-const products = csv.slice(1).map((r) => {
+const products = [];
+for (const r of csv.slice(1)) {
   const folder = path.join(SRC, r[col("Klasör")]);
   const data = JSON.parse(fs.readFileSync(path.join(folder, "veri.json"), "utf8"));
   const sourceUrl = r[col("Sayfa URL")];
   const slug = sourceUrl.replace(/\/$/, "").split("/").pop();
   const docsDir = path.join(folder, "dokumanlar");
   const documents = fs.existsSync(docsDir)
-    ? fs.readdirSync(docsDir).filter((f) => f.endsWith(".pdf")).map((f) => ({ name: f.replace(/\.pdf$/, ""), src: copy(path.join(docsDir, f), path.join("dokumanlar", f)) }))
+    ? fs.readdirSync(docsDir).filter((f) => f.endsWith(".pdf")).map((f) => ({ name: f.replace(/\.pdf$/, ""), src: copyFile(path.join(docsDir, f), path.join("dokumanlar", f)) }))
     : [];
-  return {
+  products.push({
     no: Number(r[col("No")]),
     slug,
     name: data.urun.trim(),
     categories: r[col("Kategori")].split(",").map((s) => s.trim()),
     sourceUrl,
+    sourceUrlEn: data.seo.hreflang?.en ?? null,
     shortDescription: data.kisa_aciklama.trim(),
     tabs: data.sekmeler.map((tab) => ({ title: tab.baslik, markdown: tab.metin, videos: tab.videolar })),
     videos: data.videolar,
-    images: copyImages(path.join(folder, "gorseller"), path.join("urunler", slug)),
+    images: await convertImages(path.join(folder, "gorseller"), path.join("urunler", slug), MAX_EDGE.product),
     documents,
     seo: { title: data.seo.title, description: data.seo.meta?.description ?? "" },
-  };
-});
+  });
+}
 
 const kurumsal = path.join(SRC, "02_Kurumsal");
 const media = {
-  home: copyImages(path.join(kurumsal, "11_Anasayfa/gorseller"), "kurumsal/anasayfa").filter((i) => i.width > 1),
-  about: copyImages(path.join(kurumsal, "01_Hakkimizda/gorseller"), "kurumsal/hakkimizda"),
-  contact: copyImages(path.join(kurumsal, "02_Iletisim/gorseller"), "kurumsal/iletisim"),
-  products: copyImages(path.join(kurumsal, "12_Urunler_Sayfasi/gorseller"), "kurumsal/urunler"),
-  references: copyImages(path.join(kurumsal, "06_Referanslar/gorseller"), "referanslar"),
+  home: await convertImages(path.join(kurumsal, "11_Anasayfa/gorseller"), "kurumsal/anasayfa", MAX_EDGE.home),
+  about: await convertImages(path.join(kurumsal, "01_Hakkimizda/gorseller"), "kurumsal/hakkimizda", MAX_EDGE.corporate),
+  contact: await convertImages(path.join(kurumsal, "02_Iletisim/gorseller"), "kurumsal/iletisim", MAX_EDGE.corporate),
+  products: await convertImages(path.join(kurumsal, "12_Urunler_Sayfasi/gorseller"), "kurumsal/urunler", MAX_EDGE.home),
+  references: await convertImages(path.join(kurumsal, "06_Referanslar/gorseller"), "referanslar", MAX_EDGE.reference),
 };
 
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "products.json"), JSON.stringify(products, null, 2) + "\n");
 fs.writeFileSync(path.join(OUT, "media.json"), JSON.stringify(media, null, 2) + "\n");
-console.log(`products: ${products.length}, images: ${products.reduce((n, p) => n + p.images.length, 0)}, references: ${media.references.length}`);
+console.log(`products: ${products.length}, product images: ${products.reduce((n, p) => n + p.images.length, 0)}, references: ${media.references.length}`);
