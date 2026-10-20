@@ -1,0 +1,119 @@
+@import "./teknosem.css";
+
+/* Teknosem adaptation, loaded after teknosem.css (the layout/motion base inherited from the reference clone).
+   Colours and type stay on the reference values until the "Tasarım Dili" guide arrives.
+   Source-brand image assets are replaced by Lucide icons, the TeknosemLogo wordmark and CSS-drawn decorations. */
+
+/* Turkish content is already cased by the source; capitalize would turn "ve" into "Ve" and "iLC" into "ILC". */
+.h1,.h2,nav .nav-link,nav .sub-nav .group span,nav .sub-nav .group a,nav .sub-nav .own-link,.line-element span,.primary-btn,
+#hero-section .hero-content .content .title{text-transform:none}
+/* The footer and menu rules are scoped (see :not(.\#) in teknosem.css), so the reset needs the same specificity. */
+footer:not(.\#) .links:not(.\#) a:not(.\#),footer:not(.\#) .links:not(.\#) button:not(.\#),footer:not(.\#) .bottom-link:not(.\#),
+#menu:not(.\#) .accordion-1:not(.\#) .btn:not(.\#),#menu:not(.\#) .accordion-2:not(.\#) .btn:not(.\#),#menu:not(.\#) .accordion-2:not(.\#) .products:not(.\#) a:not(.\#){text-transform:none}
+
+/* Uzmanlarımıza Danışın: the Teknosem paragraph is longer than the reference one-liner */
+#future-section p{max-width:calc(var(--fs) * 52);text-align:center;padding:0 var(--hor-padding)}
+
+/* Wordmark */
+.brand-logo{display:block;font-family:var(--font-work-sans),sans-serif;font-weight:600;letter-spacing:.22em;line-height:1;color:#fff;white-space:nowrap}
+header .brand-link{display:flex;align-items:center}
+header .brand-link .brand-logo{font-size:calc(var(--fs) * 1.55)}
+#preloader:not(.\#) .logo:not(.\#){display:flex;align-items:center;justify-content:center}
+#preloader .brand-logo{font-size:calc(var(--fs) * 2)}
+footer .bottom-link.brand .brand-logo{font-size:calc(var(--fs) * 2.1)}
+
+/* Lucide icons in the slots that held the source's icon images */
+header .menus button svg,header .menus a svg{height:calc(var(--fs) * 1.3);width:auto;color:#fff;pointer-events:none}
+header .menus a.quote-link{width:auto;padding:0 calc(var(--fs) * 1.1);color:#fff;font-size:calc(var(--fs) * .95);font-weight:500;white-space:nowrap}
+.primary-btn .icon svg{width:calc(var(--fs) * 1.32469);height:calc(var(--fs) * 1.32469);color:#fff}
+.splide__arrow svg{fill:none}
+#hero-section #hero-splide .splide__arrows .splide__arrow svg{width:55%;height:auto;color:#fff;transition:transform .15s ease-out}
+#hero-section #hero-splide .splide__arrows .splide__arrow:first-of-type svg{transform:scaleX(-1)}
+#hero-section #hero-splide .splide__arrows .splide__arrow:hover:first-of-type svg{transform:scale(-1.2,1.2)}
+#hero-section #hero-splide .splide__arrows .splide__arrow:hover:last-of-type svg{transform:scale(1.2)}
+#hero-section .scroll-down{align-items:center}
+#hero-section .scroll-down svg{width:calc(var(--fs) * 1.6);height:calc(var(--fs) * 1.6);color:#a7a7a7}
+nav .sub-nav .own-link svg{width:calc(var(--fs) * 1.32469);height:calc(var(--fs) * 1.32469);margin-left:calc(var(--fs) * .5)}
+footer .bottom-link .icon{color:#fff}
+footer:not(.\#) .links:not(.\#) button:not(.\#) svg{display:none;width:calc(var(--fs) * 1.5);height:calc(var(--fs) * 1.5);color:#fff}
+@media(orientation:portrait)and (max-aspect-ratio:.624){footer:not(.\#) .links:not(.\#) button:not(.\#) svg{display:block}}
+#menu .accordion-group .btn svg{width:calc(var(--fs) * 1.5);height:calc(var(--fs) * 1.5);flex-shrink:0;transition:transform .15s ease-in;transform:rotate(180deg)}
+#menu .accordion-group.hidden .btn svg{transform:rotate(0)!important}
+#menu .accordion-2 .btn svg{opacity:.35}
+
+/* Product renders are shot on white, so thumbnails sit on light tiles */
+.product-thumb{display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:calc(var(--fs) * .4);overflow:hidden;flex-shrink:0}
+.product-thumb img{width:100%;height:100%;object-fit:contain}
+/* The inherited menu rules size and position bare <img> children; the thumbnail tile owns that now */
+nav .sub-nav .group a .product-thumb img{width:100%;height:100%;margin:0}
+#menu:not(.\#) .accordion-2:not(.\#) .products:not(.\#) a:not(.\#) .product-thumb img{position:static;transform:none;width:100%;height:100%;margin:0}
+nav .sub-nav .group a .product-thumb{width:calc(var(--fs) * 1.875);height:calc(var(--fs) * 1.875);margin-right:calc(var(--fs) * .6)}
+/* Teknosem product names are long: groups wrap into two columns and names may break onto two lines */
+nav .sub-nav{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-columns:unset;column-gap:calc(var(--fs) * 2);row-gap:calc(var(--fs) * 1.75)}
+nav .sub-nav .group{justify-items:stretch}
+nav .sub-nav .group a{height:auto;min-height:calc(var(--fs) * 2.5);padding-top:calc(var(--fs) * .35);padding-bottom:calc(var(--fs) * .35);line-height:1.2}
+nav .sub-nav .own-link{grid-column:1/-1;grid-row:auto;margin-top:calc(var(--fs) * .5)}
+.search-bar .results .list-results{display:flex;gap:calc(var(--fs) * 2);overflow-x:auto;padding:0 var(--hor-padding) calc(var(--fs) * 2)}
+.search-bar .results .list-results .result{flex:0 0 auto}
+.search-bar .results .list-results .result .pic .product-thumb{width:100%;height:100%;border-radius:calc(var(--fs) * .875)}
+.field .btn-search svg{width:55%;height:auto;color:#fff}
+
+/* Hero: renders shot on white are shown whole on a white slide; every slide fades to black behind the copy */
+
+#hero-section #hero-splide .splide__slide.fit-contain .shot{object-fit:contain;object-position:50% 0%;height:88%}
+#hero-section #hero-splide .splide__slide:after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(#0000 38%,#000000b3 68%,#000 92%)}
+
+/* Neden TEKNOSEM? */
+.icon-badge{display:flex;align-items:center;justify-content:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3a3a3a,#111 70%);box-shadow:inset 0 0 0 1px #ffffff1f,0 0 calc(var(--fs) * 1.5) #0000008c}
+.icon-badge svg{width:42%;height:42%;color:#e6e6e6}
+#autonomy-section .blue-shade{display:block;aspect-ratio:320/267;background:radial-gradient(closest-side,#0055ff59,#0055ff1a 55%,#0000)}
+#autonomy-section .ellipse,#redefining-section .redefining-robot .ellipse{display:block;aspect-ratio:1545/732;border-radius:50% 50% 0 0/100% 100% 0 0;border:1px solid #ffffff40;border-bottom:none;-webkit-mask:linear-gradient(#000 20%,#0000 95%);mask:linear-gradient(#000 20%,#0000 95%)}
+#autonomy-section .autonomy-robot picture,#autonomy-section .autonomy-robot img{object-fit:contain}
+#autonomy-section .autonomy-details .detail .autonomy-line{display:block;left:0;width:100%;height:1px;background:linear-gradient(90deg,#0000,#6289ff 45%,#0000)}
+
+/* Teknosem – Yüksek Teknoloji ile Geleceğe Yön Veriyoruz */
+@media(orientation:landscape){#redefining-section{grid-template-columns:calc(var(--fs) * 46) calc(var(--fs) * 38)}}
+#redefining-section .redefining-robot .img{object-fit:contain}
+
+/* Ürünlerimiz */
+#target-section .head span{max-width:calc(var(--fs) * 30);font-size:calc(var(--fs) * 1.125);font-weight:400;line-height:1.35}
+#target-section .head .progress .steps-container .steps span{max-width:none}
+#target-section .list .item p a{color:inherit}
+#target-section .list .item picture{width:100%}
+#target-section .list .item .media{object-fit:contain;background-color:#fff;padding:calc(var(--fs) * 1.5)}
+@media(orientation:portrait){#target-section .list .item .media{padding:calc(var(--fs) * .75)}}
+
+/* Referans logo şeridi (not part of the reference layout) */
+#references-strip{min-height:unset;padding:calc(var(--top-space) * .75) 0 0}
+#references-strip .head{display:flex;align-items:flex-end;justify-content:space-between;padding:0 calc(var(--hor-padding) * 1.5);margin-bottom:calc(var(--fs) * 3)}
+#references-strip .own-link{color:#cbcbcb;font-size:calc(var(--fs) * 1.125)}
+#references-strip .own-link:hover{color:#fff}
+#references-strip .marquee{overflow:hidden;-webkit-mask:linear-gradient(90deg,#0000,#000 8% 92%,#0000);mask:linear-gradient(90deg,#0000,#000 8% 92%,#0000)}
+#references-strip .marquee-track{display:flex;gap:calc(var(--fs) * 1.5);width:max-content;animation:teknosem-marquee 45s linear infinite}
+#references-strip .marquee:hover .marquee-track{animation-play-state:paused}
+#references-strip .logo-tile{display:flex;align-items:center;justify-content:center;width:calc(var(--fs) * 11);height:calc(var(--fs) * 6.5);border-radius:calc(var(--fs) * .875);background:#fff;padding:calc(var(--fs) * .9)}
+#references-strip .logo-tile img{width:100%;height:100%;object-fit:contain}
+@keyframes teknosem-marquee{to{transform:translate(-50%)}}
+@media(prefers-reduced-motion:reduce){#references-strip .marquee-track{animation:none;flex-wrap:wrap;width:auto;justify-content:center}}
+@media(orientation:portrait){
+  #references-strip .logo-tile{width:calc(var(--fs) * 7.5);height:calc(var(--fs) * 4.5);border-radius:calc(var(--fs) * .6)}
+  #references-strip .head{padding:0 var(--hor-padding);margin-bottom:calc(var(--fs) * 1.5)}
+  #references-strip .own-link{font-size:calc(var(--fs) * .875)}
+}
+
+/* Mobile menu */
+#menu:not(.\#) .accordion-2:not(.\#) .products:not(.\#) a:not(.\#){height:calc(var(--fs) * 14);justify-content:flex-start;gap:calc(var(--fs) * .75)}
+#menu .accordion-2 .products a .product-thumb{width:100%;height:calc(var(--fs) * 7.5);border-radius:calc(var(--fs) * .6)}
+#menu:not(.\#) .accordion-2:not(.\#) .products:not(.\#) a:not(.\#) span:not(.product-thumb){font-size:calc(var(--fs) * .875);line-height:1.25;text-align:center}
+#menu .corporate-links{display:grid;padding:0 calc(var(--hor-padding) * 2) calc(var(--fs) * 1.5)}
+#menu .corporate-links a{color:#cbcbcb;font-size:calc(var(--fs) * 1.0625);padding:calc(var(--fs) * .6) 0}
+@media(orientation:portrait)and (max-aspect-ratio:.624){
+  header .brand-link .brand-logo{font-size:calc(var(--fs) * 1.1)}
+  header .menus a.quote-link{padding:0;font-size:calc(var(--fs) * .875)}
+  header .menus a svg,header .menus button svg{height:55%}
+}
+@media(orientation:portrait)and (min-aspect-ratio:.625){header .brand-link .brand-logo{font-size:calc(var(--fs) * 1)}}
+
+/* Transparent renders must not reveal the previous slide during the fade */
+#hero-section #hero-splide .splide__slide{background:#000}
+#hero-section #hero-splide .splide__slide.fit-contain{background:#fff}

@@ -1,20 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Work_Sans } from "next/font/google";
 import "./globals.css";
+import "@/components/sites/teknosem/teknosem-adaptation.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const workSans = Work_Sans({
+  variable: "--font-work-sans",
+  subsets: ["latin", "latin-ext"],
+  weight: "variable",
+  style: ["normal", "italic"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const description =
+  "Robotik sistemlerimiz, akademik bilgi ve mühendislik uzmanlığıyla endüstriyel üretimden sağlığa kadar geniş bir kullanım alanı sunar. Teknosem inovatif çözümleriyle sektöre yön verirken bilimin rehberliğinde büyümeye devam etmektedir.";
 
 export const metadata: Metadata = {
-  title: "Website Clone",
-  description: "Pixel-perfect website clone",
+  title: "Teknosem - HPDC Robot Sistemleri, Robotik Zımpara / Polisaj Sistemleri",
+  description,
+  openGraph: {
+    title: "Teknosem - HPDC Robot Sistemleri, Robotik Zımpara / Polisaj Sistemleri",
+    description,
+    type: "website",
+    locale: "tr_TR",
+    siteName: "Teknosem",
+  },
+  twitter: { card: "summary_large_image" },
+};
+
+export const viewport = {
+  themeColor: "#000",
 };
 
 export default function RootLayout({
@@ -23,11 +36,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="tr" data-page="/" className={workSans.variable}>
+      <body>{children}</body>
     </html>
   );
 }

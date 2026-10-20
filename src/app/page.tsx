@@ -1,9 +1,27 @@
+import { ExpertSection, HeroSection, ProductsSection, ReasonsSection, ReferencesStrip, StrengthsSection } from "@/components/sites/teknosem/home-sections";
+import { PageScripts } from "@/components/sites/teknosem/page-scripts";
+import { SiteFooter } from "@/components/sites/teknosem/site-footer";
+import { Preloader, SiteHeader } from "@/components/sites/teknosem/site-header";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">
-        Clone target not yet built. Run <code className="font-mono text-foreground">/clone-website</code> to start.
-      </p>
-    </main>
+    <>
+      <Preloader />
+      <SiteHeader />
+      <div id="smooth-wrapper">
+        <div id="smooth-content">
+          <main>
+            <HeroSection />
+            <ReasonsSection />
+            <StrengthsSection />
+            <ProductsSection />
+            <ReferencesStrip />
+            <ExpertSection />
+          </main>
+          <SiteFooter />
+        </div>
+      </div>
+      <PageScripts />
+    </>
   );
 }
