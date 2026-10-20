@@ -17,6 +17,9 @@ footer:not(.\#) .links:not(.\#) a:not(.\#),footer:not(.\#) .links:not(.\#) butto
 /* Wordmark */
 .brand-logo{display:block;font-family:var(--font-work-sans),sans-serif;font-weight:600;letter-spacing:.22em;line-height:1;color:#fff;white-space:nowrap}
 header .brand-link{display:flex;align-items:center}
+/* Teknosem renders sit on white; the white wordmark would vanish over them. Difference blending leaves the
+   header unchanged over the black canvas and inverts it over white areas. */
+@media(orientation:landscape){header{mix-blend-mode:difference}}
 header .brand-link .brand-logo{font-size:calc(var(--fs) * 1.55)}
 #preloader:not(.\#) .logo:not(.\#){display:flex;align-items:center;justify-content:center}
 #preloader .brand-logo{font-size:calc(var(--fs) * 2)}

@@ -47,3 +47,6 @@ next-env.d.ts
 
 # Local temp files
 temp/
+
+# Teknosem source content archive (kept locally, read by scripts/teknosem/build-content.mjs)
+docs/teknosem-icerik/

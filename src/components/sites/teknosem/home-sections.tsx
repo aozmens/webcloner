@@ -21,8 +21,8 @@ type HeroSlide = {
 
 const heroSlides: HeroSlide[] = [
   { slug: "ty-1000", eyebrow: "Spreyleme Üniteleri", step: "TY-1000", image: mediaByName(media.products, "deneme-15"), fit: "cover", position: "50% 45%" },
-  { slug: "tru-13-robotik-batarya-askilama-hucresi", eyebrow: "Robotik Uygulamalar", step: "TRU-13", image: mediaByName(media.home, "katalog-karakaya"), fit: "cover" },
-  { slug: "ilc-cell-hucre-tip-robotik-lazer-sistemi", eyebrow: "Robotik Lazer Sistemleri", step: "iLC-Cell", image: product("ilc-cell-hucre-tip-robotik-lazer-sistemi").images[0], fit: "contain" },
+  { slug: "tru-13", eyebrow: "Robotik Uygulamalar", step: "TRU-13", image: mediaByName(media.home, "katalog-karakaya"), fit: "cover" },
+  { slug: "ilc-cell", eyebrow: "Robotik Lazer Sistemleri", step: "iLC-Cell", image: product("ilc-cell").images[0], fit: "contain" },
   { slug: "tk-5", eyebrow: "Otomatik Kepçe Sistemleri", step: "TK-5", image: product("tk-5").images[1], fit: "contain" },
 ];
 
@@ -60,9 +60,9 @@ const strengths: { icon: LucideIcon; title: string; text: string }[] = [
 ];
 
 const showcase = [
-  { step: "HPDC Robot Sistemleri", slug: "ty-700-multi-axis-spreyleme-unitesi", image: 0 },
-  { step: "Robotik Uygulamalar", slug: "tpu-8-robotik-polisaj-uygulamasi", image: 1 },
-  { step: "Yardımcı Ekipman ve Aksesuarlar", slug: "tnd-4-spreyleme-makinesi-doner-govde-nozzle-basligi", image: 0 },
+  { step: "HPDC Robot Sistemleri", slug: "ty-700-multi-axis", image: 0 },
+  { step: "Robotik Uygulamalar", slug: "robotik-polisaj", image: 1 },
+  { step: "Yardımcı Ekipman ve Aksesuarlar", slug: "tnd-4", image: 0 },
 ];
 
 function IconBadge({ icon: Icon, className }: { icon: LucideIcon; className: string }) {
@@ -148,7 +148,7 @@ export function HeroSection() {
 }
 
 export function ReasonsSection() {
-  const robot = product("tru-50-3-parca-alma-spreyleme-ve-insert-uygulamasi").images[0];
+  const robot = product("tru-50-3").images[0];
   return (
     <section id="autonomy-section">
       <div className="h2-wrapper">
@@ -174,7 +174,7 @@ export function ReasonsSection() {
 }
 
 export function StrengthsSection() {
-  const robot = product("tpu-8-robotik-polisaj-uygulamasi").images[0];
+  const robot = product("robotik-polisaj").images[0];
   return (
     <section id="redefining-section">
       <div className="head">

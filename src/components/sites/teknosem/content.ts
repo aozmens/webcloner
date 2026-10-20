@@ -3,12 +3,16 @@
 
 import mediaJson from "./content/media.json";
 import productsJson from "./content/products.json";
+import { productSlugs } from "./slugs";
 
 export type ImageAsset = { src: string; width: number; height: number };
 export type ProductTab = { title: string; markdown: string; videos: string[] };
 export type Product = {
   no: number;
+  /** Clean URL segment: /urun/<slug>. */
   slug: string;
+  /** Slug of the old teknosem.com.tr/robotik/urun/<sourceSlug>/ page. */
+  sourceSlug: string;
   name: string;
   categories: string[];
   sourceUrl: string;
@@ -40,23 +44,41 @@ export const company = {
   },
 };
 
-/** Obvious copy/paste errors in the source content: wrong model names and typos. */
+/** Obvious copy/paste errors in the source content (wrong model names), keyed by clean slug. */
 const corrections: Record<string, [string, string][]> = {
-  "ty-700-multi-axis-spreyleme-unitesi": [["TY-1000, her döküm", "TY-700 Multi Axis, her döküm"]],
-  "ty-700-spreyleme-unitesi": [["TY-1000, her döküm", "TY-700, her döküm"]],
-  "ty-2000-spreyleme-unitesi": [["TY-1000, her döküm", "TY-2000, her döküm"]],
-  "tgm-2000-zimpara-makinesi": [["TGM-1000 modeli", "TGM-2000 modeli"]],
-  "tpm-1000-polisaj-makinesi": [["TGM-1000 Polisaj Makinesi", "TPM-1000 Polisaj Makinesi"]],
+  "ty-700-multi-axis": [["TY-1000, her döküm", "TY-700 Multi Axis, her döküm"]],
+  "ty-700": [
+    ["TY-1000, her döküm", "TY-700, her döküm"],
+    ["TY-1000 Kalıp Yağlama Sistemi", "TY-700 Kalıp Yağlama Sistemi"],
+    ["sayesinde, TY-1000 üretim hızını", "sayesinde, TY-700 üretim hızını"],
+  ],
+  "ty-2000": [
+    ["TY-1000, her döküm", "TY-2000, her döküm"],
+    ["TY-1000, dinamik hatları", "TY-2000, dinamik hatları"],
+    ["TY-1000 Kalıp Yağlama Sistemi", "TY-2000 Kalıp Yağlama Sistemi"],
+  ],
+  "tgm-2000": [["TGM-1000 modeli", "TGM-2000 modeli"]],
+  "tpm-1000": [["TGM-1000 Polisaj Makinesi", "TPM-1000 Polisaj Makinesi"]],
 };
 
 function correct(slug: string, text: string) {
   return (corrections[slug] ?? []).reduce((value, [from, to]) => value.split(from).join(to), text);
 }
 
-export const products: Product[] = (productsJson as Product[]).map((product) => ({
-  ...product,
-  shortDescription: correct(product.slug, product.shortDescription),
-}));
+type RawProduct = Omit<Product, "sourceSlug">;
+
+export const products: Product[] = (productsJson as RawProduct[]).map((raw) => {
+  const slug = productSlugs[raw.slug];
+  if (!slug) throw new Error(`No clean URL for Teknosem product: ${raw.slug}`);
+  return {
+    ...raw,
+    slug,
+    sourceSlug: raw.slug,
+    shortDescription: correct(slug, raw.shortDescription),
+    tabs: raw.tabs.map((tab) => ({ ...tab, markdown: correct(slug, tab.markdown) })),
+    seo: { ...raw.seo, description: correct(slug, raw.seo.description) },
+  };
+});
 
 export const media = mediaJson as Record<"home" | "about" | "contact" | "products" | "references", ImageAsset[]>;
 
@@ -72,8 +94,9 @@ export function leadSentence(text: string) {
   return (match ? match[0] : text).trim();
 }
 
-// Phase 1 ships only the home page, so product and corporate links still open teknosem.com.tr.
-export const productHref = (p: Product) => p.sourceUrl;
+export const productHref = (p: Product) => `/urun/${p.slug}`;
+
+/** Corporate pages are built in phase 3; until then these links still open teknosem.com.tr. */
 
 export const pages = {
   about: { label: "Hakkımızda", href: `${SOURCE_ORIGIN}/robotik/kurumsal-teknosem/` },
@@ -96,13 +119,13 @@ export const categories: Category[] = [
     title: "HPDC Robot Sistemleri",
     href: `${SOURCE_ORIGIN}/robotik/urunler/?urun-kategorisi=hpdc-robot-sistemleri`,
     groups: [
-      { title: "Spreyleme Üniteleri", slugs: ["ty-700-multi-axis-spreyleme-unitesi", "ty-700-spreyleme-unitesi", "ty-1000", "ty-2000-spreyleme-unitesi"] },
+      { title: "Spreyleme Üniteleri", slugs: ["ty-700-multi-axis", "ty-700", "ty-1000", "ty-2000"] },
       {
         title: "Robotik Parça Alma/Spreyleme Sistemleri",
-        slugs: ["tru-50-1-parca-alma-uygulamasity-700", "tru-50-2-parca-alma-ve-spreyleme-uygulamasi", "tru-50-3-parca-alma-spreyleme-ve-insert-uygulamasi"],
+        slugs: ["tru-50-1", "tru-50-2", "tru-50-3"],
       },
-      { title: "Otomatik Kepçe Sistemleri", slugs: ["tk-5", "teknosem-tk-7-otomatik-kepce-kopya"] },
-      { title: "Kalıp Vakum Sistemleri", slugs: ["a-1001", "vakusem-a-2004"] },
+      { title: "Otomatik Kepçe Sistemleri", slugs: ["tk-5", "tk-7"] },
+      { title: "Kalıp Vakum Sistemleri", slugs: ["vakusem-a-1001", "vakusem-a-2004"] },
     ],
   },
   {
@@ -112,13 +135,13 @@ export const categories: Category[] = [
       {
         title: "Robotik Lazer Sistemleri",
         slugs: [
-          "ilw-cell-hucre-tipi-robotik-lazer-kaynak-sistemi",
-          "ilw-desk-masa-tipi-lazer-kaynak",
-          "ilc-cell-hucre-tip-robotik-lazer-sistemi",
-          "ilc-desk-6-ekseni-robotik-lazer-kesim-sistemi",
+          "ilw-cell",
+          "ilw-desk",
+          "ilc-cell",
+          "ilc-desk",
         ],
       },
-      { title: "Robotik Uygulamalar", slugs: ["tru-13-robotik-batarya-askilama-hucresi", "tpu-8-robotik-polisaj-uygulamasi", "robotik-zimpara-sistemi"] },
+      { title: "Robotik Uygulamalar", slugs: ["tru-13", "robotik-polisaj", "robotik-zimpara"] },
     ],
   },
   {
@@ -128,22 +151,22 @@ export const categories: Category[] = [
       {
         title: "Yardımcı Ekipman ve Aksesuarlar",
         slugs: [
-          "spreyleme-makinesi-nozzle-basliginizi-siz-olusturun",
-          "tnd-4-spreyleme-makinesi-doner-govde-nozzle-basligi",
-          "ozel-tasarim-spreyleme-makinesi-nozzle-basligi",
-          "tnh-103-spreyleme-makinesi-nozzle-basligi",
-          "tnh-52-spreyleme-makinesi-nozzle-basligi",
+          "nozzle-basliginizi-siz-olusturun",
+          "tnd-4",
+          "ozel-tasarim-nozzle-basligi",
+          "tnh-103",
+          "tnh-52",
         ],
       },
       {
         title: "",
         slugs: [
-          "tnh-28-spreyleme-makinesi-nozzle-basligi",
-          "tnh-14-spreyleme-makinesi-nozzle-basligi",
-          "tgm-2000-zimpara-makinesi",
-          "tgm-1000-double-task-zimpara-makinesi",
-          "tgm-1000-zimpara-makinesi",
-          "tpm-1000-polisaj-makinesi",
+          "tnh-28",
+          "tnh-14",
+          "tgm-2000",
+          "tgm-1000-double-task",
+          "tgm-1000",
+          "tpm-1000",
         ],
       },
     ],
@@ -151,3 +174,19 @@ export const categories: Category[] = [
 ];
 
 export const corporateLinks = [pages.about, pages.services, pages.references, pages.downloads, pages.contact, pages.careers, pages.service, pages.kvkk];
+
+/** Where a product sits in the navigation tree, plus the other products of its group. */
+export function productPlacement(slug: string) {
+  for (const category of categories) {
+    // Untitled groups continue the previous group (desktop column split), so they count as one group.
+    const merged = category.groups.reduce<ProductGroup[]>((list, group) => {
+      const last = list[list.length - 1];
+      if (!group.title && last) list[list.length - 1] = { ...last, slugs: [...last.slugs, ...group.slugs] };
+      else list.push(group);
+      return list;
+    }, []);
+    const group = merged.find((g) => g.slugs.includes(slug));
+    if (group) return { category, group, siblings: group.slugs.filter((s) => s !== slug).map(product) };
+  }
+  throw new Error(`Teknosem product is missing from the navigation: ${slug}`);
+}

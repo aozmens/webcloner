@@ -27,7 +27,7 @@ export function Preloader() {
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({ activeHome }: { activeHome: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
   // Accordion keys that are expanded ("1" = first level, "1-0" = nested group).
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -73,7 +73,7 @@ export function SiteHeader() {
       </header>
 
       <nav style={{ "--desktopOpacity": 1 } as React.CSSProperties}>
-        <Link href="/" className="nav-link home-link active">
+        <Link href="/" className={activeHome ? "nav-link home-link active" : "nav-link home-link"}>
           Ana Sayfa
         </Link>
         {categories.map((category) => (

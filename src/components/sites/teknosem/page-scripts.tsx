@@ -401,24 +401,10 @@ function setupHome(context: gsap.Context) {
     gsap.set(loaded, { scaleX: 1 / splide.length });
   };
 
-  const future = () => {
-    const timeline = gsap
-      .timeline({
-        scrollTrigger: { trigger: "#future-section", start: "top bottom", end: "top top+=10%", scrub: isDesktopRes, toggleActions: "restart none none reset" },
-      })
-      .from("#future-section picture .bck", { yPercent: -45, duration: 1 })
-      .fromTo("#future-section picture .bck", { scale: 2 }, { scale: 1.05, duration: 1 }, "<")
-      .from("#future-section picture .bck", { opacity: 0, ease: "power1.in", duration: 0.25 }, "<")
-      .from(["#future-section h2", "#future-section p", "#future-section .primary-btn"], { opacity: 0, ease: "power1.in", stagger: 0.2 }, 0.25);
-    if (isPortraitRes) timeline.totalDuration(2.5);
-    if (isDesktopRes) timeline.from(["#future-section h2", "#future-section p", "#future-section button"], { y: "7.5vw", stagger: 0.1 }, 0.25);
-  };
-
   hero();
   autonomy();
   redefining();
   target();
-  future();
 
   return () => {
     cleanups.forEach((cleanup) => cleanup());
@@ -428,7 +414,45 @@ function setupHome(context: gsap.Context) {
   };
 }
 
-export function PageScripts() {
+/** "Uzmanlarımıza Danışın" closing section, shared by the home and product pages. */
+function setupExpert(context: gsap.Context) {
+  const { isPortraitRes, isDesktopRes } = readConditions(context);
+  if (!document.querySelector("#future-section")) return;
+  const timeline = gsap
+    .timeline({
+      scrollTrigger: { trigger: "#future-section", start: "top bottom", end: "top top+=10%", scrub: isDesktopRes, toggleActions: "restart none none reset" },
+    })
+    .from("#future-section picture .bck", { yPercent: -45, duration: 1 })
+    .fromTo("#future-section picture .bck", { scale: 2 }, { scale: 1.05, duration: 1 }, "<")
+    .from("#future-section picture .bck", { opacity: 0, ease: "power1.in", duration: 0.25 }, "<")
+    .from(["#future-section h2", "#future-section p", "#future-section .primary-btn"], { opacity: 0, ease: "power1.in", stagger: 0.2 }, 0.25);
+  if (isPortraitRes) timeline.totalDuration(2.5);
+  if (isDesktopRes) timeline.from(["#future-section h2", "#future-section p", "#future-section button"], { y: "7.5vw", stagger: 0.1 }, 0.25);
+}
+
+/** Product pages: header/nav and summary rise in like the home intro; content blocks reveal on scroll. */
+function setupProduct(context: gsap.Context) {
+  const { isPortraitRes } = readConditions(context);
+  gsap
+    .timeline({ delay: 0.15 })
+    .fromTo(["header", "nav"], { y: "2vw", autoAlpha: 0 }, { y: "0vw", autoAlpha: 1, duration: 0.8 })
+    .from(".product-hero .product-gallery", { y: "2vw", opacity: 0, duration: 0.8 }, "<25%")
+    .from(".product-hero .product-summary > *", { y: "2vw", opacity: 0, stagger: 0.08, duration: 0.6 }, "<15%");
+  // Plays once on entry: a scrubbed reveal would leave the last blocks half transparent on short pages.
+  gsap.utils.toArray<HTMLElement>(".product-reveal").forEach((block) => {
+    gsap.from(block, {
+      y: isPortraitRes ? "6vw" : "4vw",
+      opacity: 0,
+      duration: 0.9,
+      ease: "power2.out",
+      scrollTrigger: { trigger: block, start: "top bottom-=10%", toggleActions: "play none none none" },
+    });
+  });
+}
+
+export type PageKind = "home" | "product";
+
+export function PageScripts({ page }: { page: PageKind }) {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
     gsap.config({ nullTargetWarn: false });
@@ -436,7 +460,7 @@ export function PageScripts() {
     const logo = document.querySelector("#preloader > .logo");
     logo?.classList.remove("intro");
     const logoIn = preloaderIntro();
-    logoIn.tweenTo(logoIn.totalDuration());
+    if (page === "home") logoIn.tweenTo(logoIn.totalDuration());
 
     const mm = gsap.matchMedia();
     mm.add(conditions, (context) => {
@@ -453,8 +477,8 @@ export function PageScripts() {
       };
     });
 
-    // The home link already points at the current page, so the source swallows the click.
-    const homeLinks = gsap.utils.toArray<HTMLAnchorElement>(".home-link");
+    // On the home page the home link points at the current page, so the source swallows the click.
+    const homeLinks = page === "home" ? gsap.utils.toArray<HTMLAnchorElement>(".home-link") : [];
     const preventHome = (event: Event) => event.preventDefault();
     homeLinks.forEach((link) => link.addEventListener("click", preventHome));
 
@@ -464,8 +488,13 @@ export function PageScripts() {
     });
 
     mm.add(conditions, (context) => setupFooter(context));
-    mm.add(conditions, () => setupHeroFade());
-    mm.add(conditions, (context) => setupHome(context));
+    if (page === "home") {
+      mm.add(conditions, () => setupHeroFade());
+      mm.add(conditions, (context) => setupHome(context));
+    } else {
+      mm.add(conditions, (context) => setupProduct(context));
+    }
+    mm.add(conditions, (context) => setupExpert(context));
 
     return () => {
       homeLinks.forEach((link) => link.removeEventListener("click", preventHome));
@@ -474,7 +503,7 @@ export function PageScripts() {
       logoIn.kill();
       mm.revert();
     };
-  }, []);
+  }, [page]);
 
   return null;
 }
