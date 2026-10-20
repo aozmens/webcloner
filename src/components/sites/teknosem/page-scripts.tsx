@@ -132,7 +132,8 @@ function setupSubNav() {
     const timeline = gsap
       .timeline({ paused: true })
       .fromTo(subNav, { autoAlpha: 0, y: "2vw" }, { autoAlpha: 1, y: "0.5vw", duration: 0.25 })
-      .from(anchors, { opacity: 0, stagger: 0.05, duration: 0.2, ease: "power1.in" }, "<25%");
+      // 0.05s per link as in the source, capped so the 30-link mega panel still settles quickly.
+      .from(anchors, { opacity: 0, stagger: { amount: Math.min(0.05 * anchors.length, 0.35) }, duration: 0.2, ease: "power1.in" }, "<25%");
 
     const onLeave = () => timeline.timeScale(3).tweenTo(0);
     subNav.addEventListener("mouseleave", onLeave);
@@ -450,7 +451,15 @@ function setupProduct(context: gsap.Context) {
   });
 }
 
-export type PageKind = "home" | "product";
+export type PageKind = "home" | "product" | "listing";
+
+/** ScrollSmoother moves the content with transforms, so #group links need an explicit scroll. */
+function scrollToHash(smoother: ScrollSmoother | null) {
+  const target = window.location.hash && document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+  if (!target) return;
+  if (smoother) smoother.scrollTo(target, false, "top 15%");
+  else target.scrollIntoView();
+}
 
 export function PageScripts({ page }: { page: PageKind }) {
   useEffect(() => {
@@ -477,6 +486,11 @@ export function PageScripts({ page }: { page: PageKind }) {
       };
     });
 
+    // Deep links such as /urunler/hpdc-robot-sistemleri#spreyleme-uniteleri (also the legacy category redirects).
+    const onHash = () => scrollToHash(ScrollSmoother.get() ?? null);
+    window.addEventListener("hashchange", onHash);
+    const initialHash = gsap.delayedCall(0.4, onHash);
+
     // On the home page the home link points at the current page, so the source swallows the click.
     const homeLinks = page === "home" ? gsap.utils.toArray<HTMLAnchorElement>(".home-link") : [];
     const preventHome = (event: Event) => event.preventDefault();
@@ -497,6 +511,8 @@ export function PageScripts({ page }: { page: PageKind }) {
     mm.add(conditions, (context) => setupExpert(context));
 
     return () => {
+      window.removeEventListener("hashchange", onHash);
+      initialHash.kill();
       homeLinks.forEach((link) => link.removeEventListener("click", preventHome));
       cleanupSubNav();
       subNavContext.revert();

@@ -67,7 +67,26 @@
 .related-card .product-thumb{width:100%;aspect-ratio:1;height:auto;border-radius:calc(var(--fs) * .875)}
 .related-card:hover span{color:var(--MAIN-BLUE)}
 
+/* /urunler and /urunler/<kategori> */
+.catalog-hero{grid-template-columns:100%}
+.catalog-intro{display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--fs) * 1.25);max-width:calc(var(--fs) * 62)}
+.catalog-intro .paragraph-1{line-height:1.45}
+.catalog-jump{display:flex;flex-wrap:wrap;gap:calc(var(--fs) * .75);margin-top:calc(var(--fs) * .75)}
+.catalog-category{min-height:unset;padding:calc(var(--fs) * 3) calc(var(--hor-padding) * 1.5);scroll-margin-top:calc(var(--fs) * 7)}
+.catalog-category .h2 a{color:inherit}
+.catalog-category .h2 a:hover{color:var(--MAIN-BLUE)}
+.catalog-group{margin-top:calc(var(--fs) * 2.5);scroll-margin-top:calc(var(--fs) * 7)}
+.catalog-group-title{color:#cbcbcb;font-size:calc(var(--fs) * 1.375);font-weight:500;margin-bottom:calc(var(--fs) * 1.25)}
+.catalog-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:calc(var(--fs) * 1.25)}
+.catalog-card{display:flex;flex-direction:column;gap:calc(var(--fs) * .9);padding:calc(var(--fs) * .9);border-radius:calc(var(--fs) * 1.1);color:#fff;font-size:calc(var(--fs) * 1.1);font-weight:500;line-height:1.25}
+.catalog-card .product-thumb{width:100%;aspect-ratio:1;height:auto;border-radius:calc(var(--fs) * .75)}
+.catalog-card:hover span{color:var(--MAIN-BLUE)}
+
 @media(orientation:portrait){
+  .catalog-category{padding:calc(var(--fs) * 2) var(--hor-padding)}
+  .catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--fs) * .7)}
+  .catalog-group-title{font-size:calc(var(--fs) * 1.05)}
+  .catalog-card{font-size:calc(var(--fs) * .9);padding:calc(var(--fs) * .6)}
   .product-hero{grid-template-columns:100%;padding:calc(var(--fs) * 6) var(--hor-padding) calc(var(--fs) * 2);column-gap:0}
   .product-hero .breadcrumb{font-size:calc(var(--fs) * .8)}
   .product-gallery .gallery-thumbs button{width:calc(var(--fs) * 3.6);height:calc(var(--fs) * 3.6)}

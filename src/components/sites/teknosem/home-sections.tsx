@@ -1,6 +1,6 @@
 import { ArrowRight, Award, Box, ChevronsDown, FlaskConical, KeyRound, PackageCheck, PenTool, ShieldCheck, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import { leadSentence, media, pages, product, productHref, type ImageAsset } from "./content";
+import { leadSentence, media, pages, product, productHref, productsHref, type ImageAsset } from "./content";
 import { LineElement, Picture, PrimaryButton } from "./primitives";
 
 const mediaByName = (list: ImageAsset[], name: string) => {
@@ -227,6 +227,9 @@ export function ProductsSection() {
         <span>
           Robotik sistemlerimiz, akademik bilgi ve mühendislik uzmanlığıyla endüstriyel üretimden sağlığa kadar geniş bir kullanım alanı sunar.
         </span>
+        <div className="all-products">
+          <PrimaryButton href={productsHref}>Tüm Ürünleri Gör</PrimaryButton>
+        </div>
         <div className="progress">
           <ProgressBar id="target-progress-bar" variant="desktop-vertical" />
           <strong />

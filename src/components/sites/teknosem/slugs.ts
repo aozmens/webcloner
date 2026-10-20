@@ -33,9 +33,54 @@ export const productSlugs: Record<string, string> = {
   "a-1001": "vakusem-a-1001",
 };
 
-/** 301 redirects from the old WordPress product URLs to the clean ones. */
-export function productRedirects() {
-  return Object.entries(productSlugs).flatMap(([oldSlug, slug]) =>
-    [`/robotik/urun/${oldSlug}`, `/robotik/urun/${oldSlug}/`].map((source) => ({ source, destination: `/urun/${slug}`, statusCode: 301 as const })),
-  );
+/** English product pages that did not use /en/urun/<same slug>/ on the old site. */
+const englishPathOverrides: Record<string, string> = {
+  "robotik-zimpara-sistemi": "/en/urun-zimpara-sistemi",
+};
+
+type Redirect = {
+  source: string;
+  destination: string;
+  statusCode: 301;
+  has?: { type: "query"; key: string; value: string }[];
+};
+
+/**
+ * 301 table from the old teknosem.com.tr/robotik URLs to the new routes.
+ * Sources and destinations are relative to this app; Next prefixes both with basePath. When the app itself is
+ * served under the old prefix (basePath "/robotik"), the old paths lose that prefix and identical paths are skipped.
+ */
+export function legacyRedirects({ basePath, legacyBase, catalog, legacyCategoryPaths }: {
+  basePath: string;
+  legacyBase: string;
+  catalog: { slug: string }[];
+  legacyCategoryPaths: Record<string, { category: string; group?: string }>;
+}): Redirect[] {
+  const prefix = basePath === legacyBase ? "" : legacyBase;
+  const redirects: Redirect[] = [];
+  const add = (path: string, destination: string, has?: Redirect["has"]) => {
+    for (const source of [path, `${path}/`]) {
+      if (source.replace(/\/$/, "") === destination && !has) continue;
+      redirects.push({ source, destination, statusCode: 301, ...(has ? { has } : {}) });
+    }
+  };
+
+  // Category filters on the old listing pages come first: their path alone would otherwise match /urunler.
+  for (const listing of ["/urunler", "/urunler-teknosem"]) {
+    for (const category of catalog) {
+      add(`${prefix}${listing}`, `/urunler/${category.slug}`, [{ type: "query", key: "urun-kategorisi", value: category.slug }]);
+    }
+    add(`${prefix}${listing}`, "/urunler");
+  }
+  add(`${prefix}/kurumsal-teknosem-2`, "/urunler");
+
+  for (const [legacyPath, place] of Object.entries(legacyCategoryPaths)) {
+    add(`${prefix}/urun-kategorisi/${legacyPath}`, `/urunler/${place.category}${place.group ? `#${place.group}` : ""}`);
+  }
+
+  for (const [oldSlug, slug] of Object.entries(productSlugs)) {
+    add(`${prefix}/urun/${oldSlug}`, `/urun/${slug}`);
+    add(`${prefix}${englishPathOverrides[oldSlug] ?? `/en/urun/${oldSlug}`}`, `/urun/${slug}`);
+  }
+  return redirects;
 }

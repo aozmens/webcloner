@@ -1,6 +1,6 @@
 import { FileDown } from "lucide-react";
 import Link from "next/link";
-import { pages, productHref, productPlacement, type Product } from "./content";
+import { categoryHref, pages, productHref, productPlacement, productsHref, type Product } from "./content";
 import { ExpertSection } from "./home-sections";
 import { LineElement, PrimaryButton, ProductThumb } from "./primitives";
 import { ProductGallery } from "./product-gallery";
@@ -11,14 +11,18 @@ const youtubeId = (url: string) => url.match(/embed\/([\w-]+)/)?.[1];
 
 export function ProductPage({ product }: { product: Product }) {
   const { category, group, siblings } = productPlacement(product.slug);
-  const [descriptionTab, specsTab, videoTab] = product.tabs;
+  // Tabs are looked up by title: overrides can remove one (e.g. a hidden spec table).
+  const tab = (title: string) => product.tabs.find((t) => t.title === title);
+  const descriptionTab = tab("Açıklama") ?? product.tabs[0];
+  const specsTab = tab("Teknik Detaylar");
+  const videoTab = tab("Video");
   const description = parseTab(descriptionTab.markdown, descriptionTab.title);
   const specs = specsTab ? parseTab(specsTab.markdown, specsTab.title) : null;
   const videos = [...new Set([...(videoTab?.videos ?? []), ...product.videos])].filter((url) => youtubeId(url));
 
   const panels: TabPanel[] = [];
   if (description.blocks.length > 0) panels.push({ id: "aciklama", title: descriptionTab.title, content: <MarkdownBlocks blocks={description.blocks} /> });
-  if (specs && specs.blocks.length > 0) panels.push({ id: "teknik", title: specsTab.title, content: <MarkdownBlocks blocks={specs.blocks} /> });
+  if (specsTab && specs && specs.blocks.length > 0) panels.push({ id: "teknik", title: specsTab.title, content: <MarkdownBlocks blocks={specs.blocks} /> });
   if (videos.length > 0) {
     panels.push({
       id: "video",
@@ -48,7 +52,9 @@ export function ProductPage({ product }: { product: Product }) {
         <div className="breadcrumb" role="navigation" aria-label="Sayfa yolu">
           <Link href="/">Ana Sayfa</Link>
           <span aria-hidden>/</span>
-          <a href={category.href}>{category.title}</a>
+          <a href={productsHref}>Ürünler</a>
+          <span aria-hidden>/</span>
+          <a href={categoryHref(category)}>{category.title}</a>
           <span aria-hidden>/</span>
           <span aria-current="page">{product.name}</span>
         </div>

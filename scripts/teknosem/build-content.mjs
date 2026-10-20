@@ -106,7 +106,26 @@ const media = {
   references: await convertImages(path.join(kurumsal, "06_Referanslar/gorseller"), "referanslar", MAX_EDGE.reference),
 };
 
+/** Neutral stand-in for products whose real photos are still missing (see docs/research/teknosem/TODO.md). */
+async function placeholder(label, file) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+    <rect width="1200" height="1200" fill="#f2f3f5"/>
+    <rect x="360" y="420" width="480" height="300" rx="28" fill="none" stroke="#c4c8cf" stroke-width="10"/>
+    <circle cx="470" cy="520" r="38" fill="#c4c8cf"/>
+    <path d="M380 700 L540 560 L640 650 L720 590 L820 700 Z" fill="#c4c8cf"/>
+    <text x="600" y="830" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" fill="#5b6270">${label}</text>
+    <text x="600" y="900" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="#8a909b">Görsel hazırlanıyor</text>
+  </svg>`;
+  const target = path.join(PUBLIC, "gecici", file);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const info = await sharp(Buffer.from(svg)).webp(WEBP).toFile(target);
+  return { src: publicUrl(path.relative(PUBLIC, target)), width: info.width, height: info.height };
+}
+
+const placeholders = { "ty-2000": await placeholder("TY-2000", "ty-2000.webp") };
+
 fs.mkdirSync(OUT, { recursive: true });
+fs.writeFileSync(path.join(OUT, "placeholders.json"), JSON.stringify(placeholders, null, 2) + "\n");
 fs.writeFileSync(path.join(OUT, "products.json"), JSON.stringify(products, null, 2) + "\n");
 fs.writeFileSync(path.join(OUT, "media.json"), JSON.stringify(media, null, 2) + "\n");
 console.log(`products: ${products.length}, product images: ${products.reduce((n, p) => n + p.images.length, 0)}, references: ${media.references.length}`);

@@ -120,3 +120,42 @@ nav .sub-nav .own-link{grid-column:1/-1;grid-row:auto;margin-top:calc(var(--fs) 
 /* Transparent renders must not reveal the previous slide during the fade */
 #hero-section #hero-splide .splide__slide{background:#000}
 #hero-section #hero-splide .splide__slide.fit-contain{background:#fff}
+
+/* ===== Menü: Ana Sayfa · Ürünler · Kurumsal =====
+   The nav bar is now narrow, so both panels size themselves and centre under it. The CSS `translate`
+   property is used because GSAP animates `transform` (y) on the panels. */
+nav .sub-nav.mega,nav .sub-nav.corporate{left:50%;translate:-50% 0}
+nav .sub-nav.mega{width:min(calc(var(--fs) * 92),94vw);grid-template-columns:repeat(3,minmax(0,1fr));column-gap:calc(var(--fs) * 3);row-gap:calc(var(--fs) * 1.5);max-height:calc(100vh - var(--fs) * 9);overflow-y:auto;overscroll-behavior:contain}
+nav .sub-nav.mega .mega-col{display:grid;align-content:start;gap:calc(var(--fs) * 1.25)}
+nav .sub-nav.mega .mega-category{pointer-events:auto;color:#fff;font-size:calc(var(--fs) * 1.25);font-weight:600;padding-bottom:calc(var(--fs) * .6);border-bottom:1px solid #2a2a2a}
+nav .sub-nav.mega .mega-category:hover{color:var(--MAIN-BLUE)}
+nav .sub-nav.mega .group{gap:calc(var(--fs) * .2)}
+nav .sub-nav.mega .group a{font-size:calc(var(--fs) * 1.05);min-height:calc(var(--fs) * 2.2)}
+nav .sub-nav.corporate{width:max-content;min-width:calc(var(--fs) * 34)}
+nav .sub-nav.corporate .group a{white-space:nowrap}
+
+/* Mobile: Ürünler › kategori › alt grup */
+#menu .all-products{display:flex;align-items:center;justify-content:space-between;padding:calc(var(--fs) * .75) calc(var(--fs) * 1) calc(var(--fs) * .75) calc(var(--fs) * 2);color:var(--MAIN-BLUE);font-size:calc(var(--fs) * 1.0625);font-weight:500}
+#menu .all-products svg{width:calc(var(--fs) * 1.25);height:calc(var(--fs) * 1.25)}
+#menu .accordion-3{padding:0}
+/* Needs the scoped accordion-2 specificity: the inherited ".accordion-2 .btn" rule also reaches these nested buttons */
+#menu:not(.\#) .accordion-2:not(.\#) .accordion-3 .btn:not(.\#){color:#cbcbcb;font-size:calc(var(--fs) * 1.0625);padding:calc(var(--fs) * .6) calc(var(--fs) * 1) calc(var(--fs) * .6) calc(var(--fs) * 3.25)}
+#menu:not(.\#) .accordion-2:not(.\#) .accordion-3 .btn:not(.\#) svg{opacity:.35;width:calc(var(--fs) * 1.25);height:calc(var(--fs) * 1.25)}
+#menu:not(.\#) .accordion-2:not(.\#) .accordion-3 .products:not(.\#){padding-left:calc(var(--fs) * 3.25)}
+
+/* Footer: three catalog columns + Kurumsal + İletişim on one row */
+@media(orientation:landscape){
+  footer:not(.\#){grid-template-columns:repeat(5,1fr)}
+  footer:not(.\#)>.links:not(.\#){padding:calc(var(--top-space) * .4) calc(var(--fs) * 3) calc(var(--top-space) * .2)}
+  footer:not(.\#) .links:not(.\#):nth-of-type(4){border-right:.1px solid #41414182}
+  footer:not(.\#) .links:not(.\#):nth-of-type(5){border-left:.1px solid #41414182;border-right:none}
+  footer:not(.\#) .bottom-link:not(.\#):first-of-type{grid-column:3/4;border-right:none}
+  footer:not(.\#) .bottom-link:not(.\#):nth-of-type(2){grid-column:4/5}
+  footer:not(.\#) .bottom-link:not(.\#):nth-of-type(3){grid-column:5/6}
+  footer:not(.\#) .bottom-link:not(.\#):nth-of-type(4){grid-column:1/3;grid-row:2/3}
+  footer:not(.\#) .last-elem-footer:nth-of-type(2){grid-column:auto/span 2}
+}
+
+/* Ürünlerimiz: "Tüm Ürünleri Gör" */
+#target-section .head .all-products{margin-top:calc(var(--fs) * 2.5)}
+@media(orientation:portrait){#target-section .head .all-products{margin-top:calc(var(--fs) * 1.25)}}

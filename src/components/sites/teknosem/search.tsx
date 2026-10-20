@@ -3,7 +3,7 @@
 import { Search as SearchIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { productHref, products } from "./content";
+import type { NavData } from "./nav-data";
 import { ProductThumb } from "./primitives";
 import { DIALOG_TRANSITION_MS, useDialogPresence } from "./use-dialog";
 
@@ -11,8 +11,8 @@ const transition = `${DIALOG_TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
 
 const normalize = (value: string) => value.toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ı/g, "i");
 
-/** Product search over the 29 Teknosem products (name, category and short description). */
-export function Search() {
+/** Product search over the catalog (same category › group order as the menus). */
+export function Search({ nav }: { nav: NavData }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const close = useCallback(() => {
@@ -21,14 +21,25 @@ export function Search() {
   }, []);
   const { mounted, visible } = useDialogPresence(open, close);
 
+  const entries = useMemo(
+    () =>
+      nav.categories.flatMap((category) =>
+        category.groups.flatMap((group) =>
+          group.products.map((p) => ({
+            ...p,
+            label: group.products.length === 1 ? category.title : `${category.title} › ${group.title}`,
+            haystack: normalize(`${p.name} ${p.short} ${category.title} ${group.title} ${p.summary}`),
+          })),
+        ),
+      ),
+    [nav],
+  );
+
   const results = useMemo(() => {
     const terms = normalize(query).split(/\s+/).filter((term) => term.length >= 2);
-    if (terms.length === 0) return products;
-    return products.filter((p) => {
-      const haystack = normalize(`${p.name} ${p.categories.join(" ")} ${p.shortDescription}`);
-      return terms.every((term) => haystack.includes(term));
-    });
-  }, [query]);
+    if (terms.length === 0) return entries;
+    return entries.filter((entry) => terms.every((term) => entry.haystack.includes(term)));
+  }, [entries, query]);
 
   return (
     <>
@@ -72,14 +83,14 @@ export function Search() {
               <div className="results">
                 {results.length > 0 ? (
                   <div className="list-results">
-                    {results.map((p) => (
-                      <a key={p.slug} href={productHref(p)} className="result result-link">
+                    {results.map((entry) => (
+                      <a key={entry.slug} href={entry.href} className="result result-link">
                         <div className="pic">
-                          <ProductThumb image={p.images[0]} size={320} />
+                          <ProductThumb image={entry.thumb} size={320} />
                         </div>
-                        <p className="subtitle-3 color-white">{p.name}</p>
+                        <p className="subtitle-3 color-white">{entry.name}</p>
                         <div className="info">
-                          <span className="paragraph-1">{p.categories.join(" · ")}</span>
+                          <span className="paragraph-1">{entry.label}</span>
                         </div>
                       </a>
                     ))}

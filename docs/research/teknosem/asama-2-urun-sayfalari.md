@@ -44,3 +44,8 @@ Eski adres hem sondaki "/" ile hem onsuz tek adımda 301 verir (`skipTrailingSla
 - TY-700: "TY-1000 Kalıp Yağlama Sistemi" ve "sayesinde, TY-1000 üretim hızını" → TY-700
 - TY-2000: "TY-1000, dinamik hatları" ve "TY-1000 Kalıp Yağlama Sistemi" → TY-2000
 - Kısa açıklama düzeltmeleri SEO açıklamasına da uygulanır.
+
+## Güncelleme — menü ve yayın ayarları
+- Tablo artık `slugs.ts` → `legacyRedirects()` ile üretiliyor ve şunları da kapsıyor: İngilizce ürün adresleri (`/robotik/en/urun/...`, Robotik Zımpara için `/robotik/en/urun-zimpara-sistemi/`), eski kategori adresleri (`/robotik/urun-kategorisi/...` → `/urunler/<kategori>#<grup>`), `?urun-kategorisi=` filtreli liste sayfaları ve `/robotik/urunler-teknosem/`, `/robotik/kurumsal-teknosem-2/`.
+- Yayın şekli `NEXT_PUBLIC_TEKNOSEM_BASE_PATH` ile seçilir. `/robotik` altında yayında eski adreslerin öneki düşer; yalnızca sondaki "/" farkı olanlar (TY-1000, TK-5, VAKUSEM A-2004) genel "/" kuralıyla 301 alır.
+- Katalog yapısı tek dosyada: `catalog.ts` (menü, mega panel, `/urunler`, footer, arama ve kategori yönlendirmeleri).

@@ -1,23 +1,17 @@
 import { ArrowRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { categories, company, pages, product, productHref } from "./content";
+import { catalog, categoryHref, company, pages } from "./content";
 import { CurrentYear } from "./current-year";
 import { TeknosemLogo } from "./logo";
 
 type FooterColumn = { title: string; links: { label: string; href: string }[] };
 
-const productColumn = (categoryIndex: number, groupIndex: number): FooterColumn => {
-  const group = categories[categoryIndex].groups[groupIndex];
-  return { title: group.title, links: group.slugs.map((slug) => ({ label: product(slug).name, href: productHref(product(slug)) })) };
-};
-
+// One column per catalog category (its groups link to /urunler/<kategori>#<grup>), then Kurumsal and İletişim.
 const columns: FooterColumn[] = [
-  productColumn(0, 0),
-  productColumn(0, 1),
-  productColumn(1, 0),
-  productColumn(1, 1),
-  productColumn(0, 2),
-  productColumn(0, 3),
+  ...catalog.map((category) => ({
+    title: category.title,
+    links: category.groups.map((group) => ({ label: group.title, href: categoryHref(category, group) })),
+  })),
   { title: "Kurumsal", links: [pages.about, pages.contact, pages.quote, pages.services, pages.kvkk].map(({ label, href }) => ({ label, href })) },
   {
     title: "İletişim",

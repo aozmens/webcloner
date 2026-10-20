@@ -3,19 +3,13 @@
 import { ArrowRight, ChevronDown, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { categories, company, corporateLinks, pages, product, productHref, type ProductGroup } from "./content";
+import { company, corporateLinks, pages } from "./company";
 import { TeknosemLogo } from "./logo";
+import type { NavData, NavGroup } from "./nav-data";
 import { ProductThumb } from "./primitives";
 import { Search } from "./search";
 
-/** Desktop splits long groups into untitled columns; the mobile accordion shows them as one list. */
-const mergeUntitled = (groups: ProductGroup[]) =>
-  groups.reduce<ProductGroup[]>((merged, group) => {
-    const last = merged[merged.length - 1];
-    if (!group.title && last) merged[merged.length - 1] = { ...last, slugs: [...last.slugs, ...group.slugs] };
-    else merged.push(group);
-    return merged;
-  }, []);
+const ALL_PRODUCTS = "Tüm Ürünleri Gör";
 
 export function Preloader() {
   return (
@@ -27,9 +21,35 @@ export function Preloader() {
   );
 }
 
-export function SiteHeader({ activeHome }: { activeHome: boolean }) {
+/** Mega panel column entry: a titled group lists its products; a one-product group is a single link. */
+function MegaGroup({ group }: { group: NavGroup }) {
+  if (group.products.length === 1) {
+    const [only] = group.products;
+    return (
+      <div className="group">
+        <a href={only.href} title={only.name}>
+          <ProductThumb image={only.thumb} size={64} />
+          {group.title}
+        </a>
+      </div>
+    );
+  }
+  return (
+    <div className="group">
+      <span>{group.title}</span>
+      {group.products.map((p) => (
+        <a key={p.slug} href={p.href} title={p.name}>
+          <ProductThumb image={p.thumb} size={64} />
+          {p.short}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export function SiteHeader({ activeHome, nav }: { activeHome: boolean; nav: NavData }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  // Accordion keys that are expanded ("1" = first level, "1-0" = nested group).
+  // Expanded accordion keys: "urunler", "urunler/<category>", "urunler/<category>/<group>", "kurumsal".
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggleMenu = () => {
@@ -46,8 +66,8 @@ export function SiteHeader({ activeHome }: { activeHome: boolean }) {
     });
   };
 
-  const groupClass = (key: string, level: 1 | 2) =>
-    `${level === 1 ? "accordion accordion-1" : "accordion-2"}${expanded.has(key) ? "" : " hidden"} accordion-group`;
+  const groupClass = (key: string, level: 1 | 2 | 3) =>
+    `${level === 1 ? "accordion accordion-1" : `accordion-${level}`}${expanded.has(key) ? "" : " hidden"} accordion-group`;
 
   return (
     <>
@@ -61,7 +81,7 @@ export function SiteHeader({ activeHome }: { activeHome: boolean }) {
             <span />
             <span />
           </button>
-          <Search />
+          <Search nav={nav} />
           <span />
           <a href={company.whatsappHref} target="_blank" rel="noopener" aria-label="WhatsApp ile yazın">
             <MessageCircle aria-hidden />
@@ -76,35 +96,28 @@ export function SiteHeader({ activeHome }: { activeHome: boolean }) {
         <Link href="/" className={activeHome ? "nav-link home-link active" : "nav-link home-link"}>
           Ana Sayfa
         </Link>
-        {categories.map((category) => (
-          <li key={category.title} className="nav-link ">
-            {category.title}
-          </li>
-        ))}
+        <a href={nav.productsHref} className="nav-link ">
+          Ürünler
+        </a>
         <li className="nav-link ">Kurumsal</li>
-        {categories.map((category) => (
-          <div key={category.title} className="sub-nav" data-link={category.title}>
-            {category.groups.map((group, index) => (
-              <div key={`${group.title}-${index}`} className="group">
-                <span>{group.title || " "}</span>
-                {group.slugs.map((slug) => {
-                  const p = product(slug);
-                  return (
-                    <a key={slug} href={productHref(p)}>
-                      <ProductThumb image={p.images[0]} size={64} />
-                      {p.name}
-                    </a>
-                  );
-                })}
-              </div>
-            ))}
-            <a href={category.href} className="own-link">
-              {category.title}
-              <ArrowRight aria-hidden />
-            </a>
-          </div>
-        ))}
-        <div className="sub-nav" data-link="Kurumsal">
+
+        <div className="sub-nav mega" data-link="Ürünler">
+          {nav.categories.map((category) => (
+            <div key={category.slug} className="mega-col">
+              <a href={category.href} className="mega-category">
+                {category.title}
+              </a>
+              {category.groups.map((group) => (
+                <MegaGroup key={group.slug} group={group} />
+              ))}
+            </div>
+          ))}
+          <a href={nav.productsHref} className="own-link">
+            {ALL_PRODUCTS}
+            <ArrowRight aria-hidden />
+          </a>
+        </div>
+        <div className="sub-nav corporate" data-link="Kurumsal">
           <div className="group">
             <span>Kurumsal</span>
             {corporateLinks.slice(0, 4).map((link) => (
@@ -127,43 +140,52 @@ export function SiteHeader({ activeHome }: { activeHome: boolean }) {
       <aside id="menu" className={menuOpen ? "open" : undefined}>
         <div className="menu-wrapper">
           <div className="accordion accordion-1 hidden accordion-group" />
-          {categories.map((category, index) => {
-            const key = String(index);
-            return (
-              <div key={key} className={groupClass(key, 1)}>
-                <button className="btn" type="button" onClick={() => toggleGroup(key)}>
-                  {category.title}
-                  <ChevronDown aria-hidden />
-                </button>
-                <div className="accordion child">
-                  {mergeUntitled(category.groups).map((group, groupIndex) => {
-                    const childKey = `${key}-${groupIndex}`;
-                    return (
-                      <div key={childKey} className={groupClass(childKey, 2)}>
-                        <button className="btn" type="button" onClick={() => toggleGroup(childKey)}>
-                          {group.title}
-                          <ChevronDown aria-hidden />
-                        </button>
-                        <div className="products child">
-                          {group.slugs.map((slug) => {
-                            const p = product(slug);
-                            return (
-                              <a key={slug} href={productHref(p)}>
-                                <ProductThumb image={p.images[0]} size={160} />
-                                <span>{p.name}</span>
-                              </a>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-          <div className={groupClass("corporate", 1)}>
-            <button className="btn" type="button" onClick={() => toggleGroup("corporate")}>
+          <div className={groupClass("urunler", 1)}>
+            <button className="btn" type="button" onClick={() => toggleGroup("urunler")}>
+              Ürünler
+              <ChevronDown aria-hidden />
+            </button>
+            <div className="accordion child">
+              <a href={nav.productsHref} className="all-products">
+                {ALL_PRODUCTS}
+                <ArrowRight aria-hidden />
+              </a>
+              {nav.categories.map((category) => {
+                const categoryKey = `urunler/${category.slug}`;
+                return (
+                  <div key={category.slug} className={groupClass(categoryKey, 2)}>
+                    <button className="btn" type="button" onClick={() => toggleGroup(categoryKey)}>
+                      {category.title}
+                      <ChevronDown aria-hidden />
+                    </button>
+                    <div className="child">
+                      {category.groups.map((group) => {
+                        const groupKey = `${categoryKey}/${group.slug}`;
+                        return (
+                          <div key={group.slug} className={groupClass(groupKey, 3)}>
+                            <button className="btn" type="button" onClick={() => toggleGroup(groupKey)}>
+                              {group.title}
+                              <ChevronDown aria-hidden />
+                            </button>
+                            <div className="products child">
+                              {group.products.map((p) => (
+                                <a key={p.slug} href={p.href} title={p.name}>
+                                  <ProductThumb image={p.thumb} size={160} />
+                                  <span>{p.short}</span>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className={groupClass("kurumsal", 1)}>
+            <button className="btn" type="button" onClick={() => toggleGroup("kurumsal")}>
               Kurumsal
               <ChevronDown aria-hidden />
             </button>
