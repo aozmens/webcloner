@@ -1,6 +1,6 @@
 import { ArrowRight, Award, Box, ChevronsDown, FlaskConical, KeyRound, PackageCheck, PenTool, ShieldCheck, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import { leadSentence, media, pageHref, pages, product, productHref, productsHref, type ImageAsset } from "./content";
+import { company, leadSentence, media, pageHref, pages, product, productHref, productsHref, type ImageAsset } from "./content";
 import { LineElement, Picture, PrimaryButton } from "./primitives";
 
 const mediaByName = (list: ImageAsset[], name: string) => {
@@ -54,7 +54,7 @@ const strengths: { icon: LucideIcon; title: string; text: string }[] = [
   },
   {
     icon: Award,
-    title: "30 Yıllık Tecrübe ve Güven",
+    title: `${company.experienceYears} Yıllık Tecrübe ve Güven`,
     text: "1994 yılından beri sektörde var olan Teknosem, güçlenerek gelen altyapısı ve deneyimli ekibi ile güvenilir, kaliteli ve yüksek performanslı ürünler üretmektedir.",
   },
 ];
@@ -181,7 +181,7 @@ export function StrengthsSection() {
         <div className="h2-wrapper">
           <h2 className="h1">Teknosem – Yüksek Teknoloji ile Geleceğe Yön Veriyoruz</h2>
         </div>
-        <p>30 Yıllık Tecrübe ve İnovasyonun Gücüyle Yanınızdayız</p>
+        <p>{company.experienceYears} Yıllık Tecrübe ve İnovasyonun Gücüyle Yanınızdayız</p>
       </div>
       <div className="info">
         <h2>TEKNOSEM</h2>

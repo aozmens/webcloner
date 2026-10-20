@@ -13,6 +13,8 @@ export const company = {
   email: "info@teknosem.com.tr",
   address: "Mescit Mh. Demokrasi Cd. No:3 Birmes Sanayi Sit. D2 Blok No:4 Tuzla-İSTANBUL",
   city: "Tuzla-İSTANBUL",
+  /** Years of experience shown on the site (founded 1994). One value everywhere; update it here. */
+  experienceYears: 32,
   whatsapp: "+90 545 829 06 52",
   whatsappNumber: "905458290652",
   whatsappHref: "https://wa.me/905458290652",

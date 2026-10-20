@@ -90,7 +90,7 @@ export function AboutPage() {
           <p>
             Teknosem Test ve Analiz Cihazları Teknoloji Araştırma Sanayi Dış Ticaret A.Ş., 1994 yılında şahıs şirketi olarak kurulmuş ve üretime
             başlamıştır. 2006 yılında adını ve vizyonunu yenileyerek, hedeflerine ulaşmak için çalışmalarına hız kazandırmıştır. Güçlü altyapısı ve
-            kurumsal kimliği ile sektördeki 31 yıllık tecrübesini kullanarak, Türkiye’de test ve analiz cihazları ile robotik otomasyon sistemleri
+            kurumsal kimliği ile sektördeki {company.experienceYears} yıllık tecrübesini kullanarak, Türkiye’de test ve analiz cihazları ile robotik otomasyon sistemleri
             alanında öncü adımlar atmaya devam etmektedir.
           </p>
           <p>
