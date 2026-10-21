@@ -17,9 +17,11 @@ footer:not(.\#) .links:not(.\#) a:not(.\#),footer:not(.\#) .links:not(.\#) butto
 /* Wordmark */
 .brand-logo{display:block;font-family:var(--font-work-sans),sans-serif;font-weight:600;letter-spacing:.22em;line-height:1;color:#fff;white-space:nowrap}
 header .brand-link{display:flex;align-items:center}
-/* Teknosem renders sit on white; the white wordmark would vanish over them. Difference blending leaves the
-   header unchanged over the black canvas and inverts it over white areas. */
-@media(orientation:landscape){header{mix-blend-mode:difference}}
+/* The white wordmark sits on the same dark glass pill as the nav and header buttons, so it stays readable
+   over the white product renders without inverting the header colours. */
+@media(orientation:landscape),(orientation:portrait) and (min-aspect-ratio:.625){
+  header .brand-link{width:auto!important;height:var(--button-height)!important;padding:0 calc(var(--fs) * 1.1);border-radius:calc(var(--fs) * .875);background:var(--nav-background)!important;backdrop-filter:blur(.5vw);-webkit-backdrop-filter:blur(.5vw)}
+}
 header .brand-link .brand-logo{font-size:calc(var(--fs) * 1.55)}
 #preloader:not(.\#) .logo:not(.\#){display:flex;align-items:center;justify-content:center}
 #preloader .brand-logo{font-size:calc(var(--fs) * 2)}
@@ -112,7 +114,7 @@ nav .sub-nav .own-link{grid-column:1/-1;grid-row:auto;margin-top:calc(var(--fs) 
 #menu .corporate-links a{color:#cbcbcb;font-size:calc(var(--fs) * 1.0625);padding:calc(var(--fs) * .6) 0}
 @media(orientation:portrait)and (max-aspect-ratio:.624){
   header .brand-link .brand-logo{font-size:calc(var(--fs) * 1.1)}
-  header .menus a.quote-link{padding:0;font-size:calc(var(--fs) * .875)}
+  header .menus a.quote-link{padding:0 calc(var(--fs) * .75)!important;height:calc(var(--fs) * 2)!important;border-radius:calc(var(--fs) * .6)!important;font-size:calc(var(--fs) * .8)}
   header .menus a svg,header .menus button svg{height:55%}
 }
 @media(orientation:portrait)and (min-aspect-ratio:.625){header .brand-link .brand-logo{font-size:calc(var(--fs) * 1)}}
@@ -173,3 +175,18 @@ nav .sub-nav.corporate .group a{white-space:nowrap}
   footer:not(.\#) .bottom-link:not(.\#):nth-of-type(2),footer:not(.\#) .bottom-link:not(.\#):nth-of-type(4){grid-column:4/7!important;border-right:none!important;border-bottom:.1px solid #41414182!important}
   footer:not(.\#) .bottom-link.brand:not(.\#){grid-row:auto!important;grid-column:1/7!important;border:none!important}
 }
+
+/* ===== Buttons =====
+   The reference used white pills with dark text. Teknosem buttons use the blue accent that already marks the
+   arrow chip, line elements, progress bars and focus states, so every primary action reads the same. */
+.primary-btn{background:linear-gradient(224deg,#6c8ae3 -47.2%,#3d60c9 74.45%);color:#fff;padding-left:calc(var(--fs) * 1.1);box-shadow:inset 0 0 0 1px #ffffff2e,0 calc(var(--fs) * .35) calc(var(--fs) * 1.25) #3d60c94d;transition:filter .15s ease-in,box-shadow .15s ease-in}
+.primary-btn:hover{background-color:transparent;filter:brightness(1.12);box-shadow:inset 0 0 0 1px #ffffff47,0 calc(var(--fs) * .45) calc(var(--fs) * 1.6) #3d60c973}
+.primary-btn .icon{background:#ffffff26;box-shadow:inset 0 0 0 1px #ffffff1f}
+.primary-btn .icon svg{transition:transform .15s ease-out}
+.primary-btn:hover .icon svg{transform:translateX(calc(var(--fs) * .15))}
+.primary-btn:focus-visible,.secondary-btn:focus-visible,header .menus a.quote-link:focus-visible{outline:2px solid #8fa9f2;outline-offset:3px}
+@media(orientation:portrait){.primary-btn{padding-left:calc(var(--fs) * .9)}}
+
+/* Header "Teklif Al": the site's main call to action, same accent as the primary buttons */
+header .menus a.quote-link,header .menus a.quote-link:hover{background:linear-gradient(224deg,#6c8ae3 -47.2%,#3d60c9 74.45%)!important;border:none!important;box-shadow:inset 0 0 0 1px #ffffff2e}
+header .menus a.quote-link:hover{filter:brightness(1.12)}
