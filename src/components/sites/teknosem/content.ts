@@ -5,7 +5,6 @@ import mediaJson from "./content/media.json";
 import productsJson from "./content/products.json";
 import { catalog, shortNames, type CatalogCategory, type CatalogGroup } from "./catalog";
 import { productOverrides, type ManualInfo } from "./product-overrides";
-import { withBase } from "./site-config";
 import { productSlugs } from "./slugs";
 
 export { company, corporateLinks, pageHref, pages, SOURCE_ORIGIN, type PageKey } from "./company";
@@ -68,19 +67,17 @@ export const products: Product[] = (productsJson as RawProduct[]).map((raw) => {
     tabs: raw.tabs
       .filter((tab, index) => !(override?.hideSpecs && index === 1))
       .map((tab) => ({ ...tab, markdown: correct(slug, tab.markdown) })),
-    images: images.map((image) => ({ ...image, src: withBase(image.src) })),
+    images: images.map((image) => ({ ...image, src: image.src })),
     documents: documents.map((doc) => {
       // Every published manual must have its model and version confirmed from the PDF itself.
       if (!override?.manual) throw new Error(`Manual of ${slug} has no confirmed model/version in product-overrides.ts`);
-      return { ...doc, ...override.manual, src: withBase(doc.src) };
+      return { ...doc, ...override.manual, src: doc.src };
     }),
     seo: { ...raw.seo, description: correct(slug, raw.seo.description) },
   };
 });
 
-const withBaseImages = (images: ImageAsset[]) => images.map((image) => ({ ...image, src: withBase(image.src) }));
-
-export const media = Object.fromEntries(Object.entries(mediaJson).map(([key, images]) => [key, withBaseImages(images)])) as Record<
+export const media = mediaJson as Record<
   "home" | "about" | "contact" | "products" | "references",
   ImageAsset[]
 >;
@@ -105,10 +102,10 @@ export function leadSentence(text: string) {
   return (match ? match[0] : text).trim();
 }
 
-export const productHref = (p: Product) => withBase(`/urun/${p.slug}`);
-export const productsHref = withBase("/urunler");
+export const productHref = (p: Product) => `/urun/${p.slug}`;
+export const productsHref = "/urunler";
 export const categoryHref = (category: CatalogCategory, group?: CatalogGroup) =>
-  withBase(`/urunler/${category.slug}${group ? `#${group.slug}` : ""}`);
+  `/urunler/${category.slug}${group ? `#${group.slug}` : ""}`;
 
 export { catalog };
 export type { CatalogCategory, CatalogGroup };

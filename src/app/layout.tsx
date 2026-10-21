@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Work_Sans } from "next/font/google";
 import "./globals.css";
 import "@/components/sites/teknosem/teknosem-adaptation.css";
-import { basePath, siteUrl } from "@/components/sites/teknosem/site-config";
+import { allowIndexing, siteUrl } from "@/components/sites/teknosem/site-config";
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",
@@ -16,7 +16,8 @@ const description =
 
 export const metadata: Metadata = {
   // Absolute URLs (canonical, og:image) are only produced once the production domain is configured.
-  ...(siteUrl ? { metadataBase: new URL(`${siteUrl}${basePath}/`) } : {}),
+  ...(siteUrl ? { metadataBase: new URL(`${siteUrl}/`) } : {}),
+  ...(allowIndexing ? {} : { robots: { index: false, follow: false } }),
   title: "Teknosem - HPDC Robot Sistemleri, Robotik Zımpara / Polisaj Sistemleri",
   description,
   openGraph: {

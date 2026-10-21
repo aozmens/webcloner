@@ -3,7 +3,6 @@
 // Every logo placement (preloader, header, footer) renders this component.
 
 import logoJson from "./content/logo.json";
-import { withBase } from "./site-config";
 
 export type LogoVariant = "dark" | "light";
 
@@ -13,7 +12,7 @@ export function TeknosemLogo({ variant = "dark", className, eager }: { variant?:
   const logo = logos[variant];
   return (
     <img
-      src={withBase(logo.src)}
+      src={logo.src}
       width={logo.width}
       height={logo.height}
       alt="Teknosem"

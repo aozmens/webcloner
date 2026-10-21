@@ -46,18 +46,17 @@ type Redirect = {
 };
 
 /**
- * 301 table from the old teknosem.com.tr/robotik URLs to the new routes.
- * Sources and destinations are relative to this app; Next prefixes both with basePath. When the app itself is
- * served under the old prefix (basePath "/robotik"), the old paths lose that prefix and identical paths are skipped.
+ * 301 table from the old teknosem.com.tr/robotik URLs to the new routes. The site runs at the root of its own
+ * (sub)domain, so the old paths keep their "/robotik" prefix: the main site is expected to forward
+ * teknosem.com.tr/robotik/* here with the path unchanged, and this table maps it to the new page.
  */
-export function legacyRedirects({ basePath, legacyBase, catalog, legacyCategoryPaths, pages }: {
-  basePath: string;
+export function legacyRedirects({ legacyBase, catalog, legacyCategoryPaths, pages }: {
   legacyBase: string;
   catalog: { slug: string }[];
   legacyCategoryPaths: Record<string, { category: string; group?: string }>;
   pages: { path: string; legacy: readonly string[] }[];
 }): Redirect[] {
-  const prefix = basePath === legacyBase ? "" : legacyBase;
+  const prefix = legacyBase;
   const redirects: Redirect[] = [];
   const add = (path: string, destination: string, has?: Redirect["has"]) => {
     for (const source of [path, `${path}/`]) {
@@ -79,8 +78,8 @@ export function legacyRedirects({ basePath, legacyBase, catalog, legacyCategoryP
     add(`${prefix}/urun-kategorisi/${legacyPath}`, `/urunler/${place.category}${place.group ? `#${place.group}` : ""}`);
   }
 
-  // Old home page (only when the app is not itself served under the old prefix).
-  if (prefix) add(prefix, "/");
+  // Old home page.
+  add(prefix, "/");
 
   for (const page of pages) {
     for (const legacyPath of page.legacy) add(`${prefix}${legacyPath}`, page.path);

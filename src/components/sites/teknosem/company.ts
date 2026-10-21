@@ -1,8 +1,6 @@
 // Company facts and page links. No data imports, so client components can use it without pulling in the
 // product content.
 
-import { withBase } from "./site-config";
-
 export const SOURCE_ORIGIN = "https://teknosem.com.tr";
 
 export const company = {
@@ -41,7 +39,7 @@ export const pages = {
 
 export type PageKey = keyof typeof pages;
 
-export const pageHref = (key: PageKey) => withBase(pages[key].path);
+export const pageHref = (key: PageKey) => pages[key].path;
 
 export const corporateLinks = (["about", "services", "references", "downloads", "contact", "careers", "service", "kvkk"] as const).map((key) => ({
   label: pages[key].label,

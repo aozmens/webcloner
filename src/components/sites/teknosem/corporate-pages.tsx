@@ -11,7 +11,6 @@ import kvkkJson from "./content/kvkk.json";
 import { catalog, company, manuals, media, pageHref, pages, product, productHref, shortName, type PageKey } from "./content";
 import { ExpertSection } from "./home-sections";
 import { LineElement, PrimaryButton } from "./primitives";
-import { basePath } from "./site-config";
 import { WhatsAppForm, type FormField } from "./whatsapp-form";
 
 function PageHero({ page, eyebrow, title, children, image }: { page: PageKey; eyebrow?: string; title: string; children?: ReactNode; image?: { src: string; width: number; height: number; alt: string } }) {
@@ -209,7 +208,7 @@ export function ReferencesPage() {
 /* ---------------------------------------------------------------- İndirmeler */
 
 function fileSize(src: string) {
-  const file = path.join(process.cwd(), "public", src.slice(basePath.length));
+  const file = path.join(process.cwd(), "public", src);
   const mb = fs.statSync(file).size / 1024 / 1024;
   return `${mb.toLocaleString("tr-TR", { maximumFractionDigits: 1 })} MB`;
 }

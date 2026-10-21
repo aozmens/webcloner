@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 import { catalog, pages, products } from "@/components/sites/teknosem/content";
-import { basePath, siteUrl } from "@/components/sites/teknosem/site-config";
+import { allowIndexing, siteUrl } from "@/components/sites/teknosem/site-config";
 
 /** Every public route. Empty until NEXT_PUBLIC_TEKNOSEM_SITE_URL is set, because sitemaps need absolute URLs. */
 export default function sitemap(): MetadataRoute.Sitemap {
-  if (!siteUrl) return [];
-  const url = (path: string) => `${siteUrl}${basePath}${path}`;
+  if (!siteUrl || !allowIndexing) return [];
+  const url = (path: string) => `${siteUrl}${path}`;
   return [
     { url: url("/"), priority: 1 },
     { url: url("/urunler"), priority: 0.9 },

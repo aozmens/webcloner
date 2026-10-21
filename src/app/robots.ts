@@ -1,10 +1,13 @@
 import type { MetadataRoute } from "next";
-import { basePath, siteUrl } from "@/components/sites/teknosem/site-config";
+import { ADMIN_PATH, allowIndexing, siteUrl } from "@/components/sites/teknosem/site-config";
 
 export default function robots(): MetadataRoute.Robots {
+  if (!allowIndexing) {
+    // Test deployment: keep the whole site out of search engines.
+    return { rules: { userAgent: "*", disallow: "/" } };
+  }
   return {
-    rules: { userAgent: "*", allow: "/" },
-    // The sitemap needs absolute URLs, so it is only announced once the production domain is configured.
-    ...(siteUrl ? { sitemap: `${siteUrl}${basePath}/sitemap.xml` } : {}),
+    rules: { userAgent: "*", allow: "/", disallow: [ADMIN_PATH, `${ADMIN_PATH}/`, "/api/"] },
+    ...(siteUrl ? { sitemap: `${siteUrl}/sitemap.xml`, host: siteUrl } : {}),
   };
 }

@@ -1,6 +1,5 @@
 import { pageHref, productsHref } from "./content";
 import { PrimaryButton } from "./primitives";
-import { withBase } from "./site-config";
 
 export function NotFoundPage() {
   return (
@@ -10,7 +9,7 @@ export function NotFoundPage() {
         <h1 className="h1">Sayfa bulunamadı</h1>
         <p className="paragraph-1 text-start">Aradığınız sayfa taşınmış ya da kaldırılmış olabilir.</p>
         <div className="product-actions">
-          <PrimaryButton href={withBase("/")}>Ana Sayfa</PrimaryButton>
+          <PrimaryButton href="/">Ana Sayfa</PrimaryButton>
           <a className="secondary-btn" href={productsHref}>
             Ürünler
           </a>
