@@ -1,0 +1,12 @@
+{
+  "dark": {
+    "src": "/sites/teknosem/logo/teknosem-dark.webp",
+    "width": 1600,
+    "height": 383
+  },
+  "light": {
+    "src": "/sites/teknosem/logo/teknosem-light.webp",
+    "width": 1600,
+    "height": 372
+  }
+}

@@ -15,7 +15,7 @@ export function Preloader() {
   return (
     <aside id="preloader" className="visible">
       <div className="logo intro">
-        <TeknosemLogo />
+        <TeknosemLogo eager />
       </div>
     </aside>
   );
@@ -72,8 +72,8 @@ export function SiteHeader({ activeHome, nav }: { activeHome: boolean; nav: NavD
   return (
     <>
       <header style={{ "--desktopOpacity": 1 } as React.CSSProperties}>
-        <Link href="/" className="brand-link home-link" aria-label="Ana sayfaya git">
-          <TeknosemLogo />
+        <Link href="/" className="brand-link home-link" aria-label="Teknosem ana sayfa">
+          <TeknosemLogo eager />
         </Link>
         <div className="menus">
           <button aria-label="Mobil menüyü aç" id="hamburger" type="button" className={menuOpen ? "open" : undefined} onClick={toggleMenu}>
