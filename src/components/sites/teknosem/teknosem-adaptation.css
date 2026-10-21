@@ -47,7 +47,7 @@ footer:not(.\#) .links:not(.\#) button:not(.\#) svg{display:none;width:calc(var(
 #menu .accordion-2 .btn svg{opacity:.35}
 
 /* Product renders are shot on white, so thumbnails sit on light tiles */
-.product-thumb{display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:calc(var(--fs) * .4);overflow:hidden;flex-shrink:0}
+.product-thumb{display:inline-flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 50% 35%,#2a2b31 0%,#141518 60%,#0c0c0e 100%);box-shadow:inset 0 0 0 1px #ffffff12;border-radius:calc(var(--fs) * .4);overflow:hidden;flex-shrink:0}
 .product-thumb img{width:100%;height:100%;object-fit:contain}
 /* The inherited menu rules size and position bare <img> children; the thumbnail tile owns that now */
 nav .sub-nav .group a .product-thumb img{width:100%;height:100%;margin:0}
@@ -84,7 +84,7 @@ nav .sub-nav .own-link{grid-column:1/-1;grid-row:auto;margin-top:calc(var(--fs) 
 #target-section .head .progress .steps-container .steps span{max-width:none}
 #target-section .list .item p a{color:inherit}
 #target-section .list .item picture{width:100%}
-#target-section .list .item .media{object-fit:contain;background-color:#fff;padding:calc(var(--fs) * 1.5)}
+#target-section .list .item .media{object-fit:contain;background-color:transparent;padding:calc(var(--fs) * 1.5)}
 @media(orientation:portrait){#target-section .list .item .media{padding:calc(var(--fs) * .75)}}
 
 /* Referans logo şeridi (not part of the reference layout) */
@@ -95,7 +95,7 @@ nav .sub-nav .own-link{grid-column:1/-1;grid-row:auto;margin-top:calc(var(--fs) 
 #references-strip .marquee{overflow:hidden;-webkit-mask:linear-gradient(90deg,#0000,#000 8% 92%,#0000);mask:linear-gradient(90deg,#0000,#000 8% 92%,#0000)}
 #references-strip .marquee-track{display:flex;gap:calc(var(--fs) * 1.5);width:max-content;animation:teknosem-marquee 45s linear infinite}
 #references-strip .marquee:hover .marquee-track{animation-play-state:paused}
-#references-strip .logo-tile{display:flex;align-items:center;justify-content:center;width:calc(var(--fs) * 11);height:calc(var(--fs) * 6.5);border-radius:calc(var(--fs) * .875);background:#fff;padding:calc(var(--fs) * .9)}
+#references-strip .logo-tile{display:flex;align-items:center;justify-content:center;width:calc(var(--fs) * 11);height:calc(var(--fs) * 6.5);border-radius:calc(var(--fs) * .875);background:#ffffff08;box-shadow:inset 0 0 0 1px #ffffff14;padding:calc(var(--fs) * .9)}
 #references-strip .logo-tile img{width:100%;height:100%;object-fit:contain}
 @keyframes teknosem-marquee{to{transform:translate(-50%)}}
 @media(prefers-reduced-motion:reduce){#references-strip .marquee-track{animation:none;flex-wrap:wrap;width:auto;justify-content:center}}
@@ -120,7 +120,7 @@ nav .sub-nav .own-link{grid-column:1/-1;grid-row:auto;margin-top:calc(var(--fs) 
 
 /* Transparent renders must not reveal the previous slide during the fade */
 #hero-section #hero-splide .splide__slide{background:#000}
-#hero-section #hero-splide .splide__slide.fit-contain{background:#fff}
+#hero-section #hero-splide .splide__slide.fit-contain{background:radial-gradient(70% 70% at 50% 40%,#23252c,#000 75%)}
 
 /* ===== Menü: Ana Sayfa · Ürünler · Kurumsal =====
    The nav bar is now narrow, so both panels size themselves and centre under it. The CSS `translate`
@@ -215,4 +215,17 @@ header .menus a.quote-link:hover{filter:brightness(1.12)}
   #redefining-section .redefining-robot{grid-row:2/3;align-self:center;justify-self:center;width:min(100%,calc(var(--fs) * 60.8125 * 1.3));height:auto;aspect-ratio:960/612}
   #redefining-section .redefining-robot picture,#redefining-section .redefining-robot .img{width:100%;height:100%}
   #redefining-section .redefining-robot .ellipse{width:125%}
+}
+
+/* Reference logos are transparent now (white removed); dark wordmarks would vanish on the dark page, so the
+   strip and the Referanslar grid show them as light monochrome marks. Inverting a greyscale copy keeps the
+   contrast inside each logo (e.g. white text in a coloured box) legible. */
+#references-strip .logo-tile img,.reference-grid .logo-tile img{filter:grayscale(1) invert(1) contrast(1.15);opacity:.82;transition:opacity .2s ease-in}
+#references-strip .logo-tile:hover img,.reference-grid .logo-tile:hover img{opacity:1}
+
+/* "Teknosem – Yüksek Teknoloji…" (landscape): the render sits near the left, vertically centred in the section,
+   and moves up into the heading rows; the heading may overlap it. */
+@media(orientation:landscape){
+  #redefining-section .head{grid-row:1/2;grid-column:1/2;position:relative;z-index:2}
+  #redefining-section .redefining-robot{grid-row:1/3;grid-column:1/2;align-self:center;justify-self:start;z-index:0;margin-left:calc(var(--fs) * -1.5)}
 }

@@ -18,21 +18,133 @@ const WEBP = { quality: 80, effort: 5 };
 
 const publicUrl = (relative) => `${URL_BASE}/${relative.split(path.sep).join("/")}`;
 
-async function toWebp(from, toRelative, maxEdge) {
+/**
+ * Makes the white studio background of a render transparent.
+ * Flood fill from the image border through near-white, low-saturation pixels, so white parts *inside* the product
+ * (panels, labels) are kept because they are not connected to the border. Pixels in the fill get an alpha ramp
+ * (pure white → transparent, light grey shadows → partly transparent) and the white is removed from their colour,
+ * then a 1px band around the fill is de-haloed the same way so anti-aliased edges do not glow on dark pages.
+ */
+const FILL_MIN = 226; // min(r,g,b) for a pixel to belong to the background
+const CLEAR_MIN = 248; // at or above this, the background pixel is fully transparent
+const MAX_SPREAD = 22; // max(r,g,b) - min(r,g,b): keeps coloured light areas (e.g. yellow) out of the fill
+
+function removeWhiteBackground(data, width, height) {
+  const n = width * height;
+  const state = new Uint8Array(n); // 0 = untouched, 1 = background
+  const isBackground = (p) => {
+    const i = p * 4;
+    if (data[i + 3] < 16) return true;
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const lo = Math.min(r, g, b);
+    return lo >= FILL_MIN && Math.max(r, g, b) - lo <= MAX_SPREAD;
+  };
+  const stack = [];
+  const seed = (p) => {
+    if (!state[p] && isBackground(p)) {
+      state[p] = 1;
+      stack.push(p);
+    }
+  };
+  const flood = () => {
+    while (stack.length) {
+      const p = stack.pop();
+      const x = p % width;
+      if (x > 0) seed(p - 1);
+      if (x < width - 1) seed(p + 1);
+      if (p >= width) seed(p - width);
+      if (p < n - width) seed(p + width);
+    }
+  };
+  for (let x = 0; x < width; x++) { seed(x); seed((height - 1) * width + x); }
+  for (let y = 0; y < height; y++) { seed(y * width); seed(y * width + width - 1); }
+  flood();
+
+  // Background seen through enclosed gaps (e.g. inside a cable-chain loop) is not connected to the border.
+  // Such pockets are removed when they are pure studio white (product surfaces are shaded, never 250+ flat)
+  // and large enough not to be a highlight.
+  const isPureWhite = (p) => {
+    const i = p * 4;
+    return Math.min(data[i], data[i + 1], data[i + 2]) >= 250 && Math.max(data[i], data[i + 1], data[i + 2]) - Math.min(data[i], data[i + 1], data[i + 2]) <= 6;
+  };
+  const visited = new Uint8Array(n);
+  const minPocket = Math.max(400, Math.round(n * 0.002));
+  for (let start = 0; start < n; start++) {
+    if (state[start] || visited[start] || !isPureWhite(start)) continue;
+    const component = [start];
+    visited[start] = 1;
+    for (let k = 0; k < component.length; k++) {
+      const p = component[k];
+      const x = p % width;
+      for (const q of [x > 0 ? p - 1 : -1, x < width - 1 ? p + 1 : -1, p - width, p + width]) {
+        if (q >= 0 && q < n && !visited[q] && !state[q] && isPureWhite(q)) {
+          visited[q] = 1;
+          component.push(q);
+        }
+      }
+    }
+    if (component.length >= minPocket) {
+      for (const p of component) {
+        state[p] = 1;
+        stack.push(p);
+      }
+      flood(); // extend into the pocket's light, anti-aliased rim
+    }
+  }
+  let cleared = 0;
+  const unwhite = (p, strength) => {
+    const i = p * 4;
+    const lo = Math.min(data[i], data[i + 1], data[i + 2]);
+    // How much of this pixel is the white background (0..1).
+    const w = Math.max(0, Math.min(1, (lo - FILL_MIN) / (CLEAR_MIN - FILL_MIN))) * strength;
+    const alpha = 1 - w;
+    if (alpha <= 0.02) {
+      data[i + 3] = 0;
+      return;
+    }
+    for (let c = 0; c < 3; c++) data[i + c] = Math.max(0, Math.min(255, Math.round((data[i + c] - 255 * w) / alpha)));
+    data[i + 3] = Math.round(data[i + 3] * alpha);
+  };
+  for (let p = 0; p < n; p++) {
+    if (state[p] === 1) {
+      unwhite(p, 1);
+      cleared++;
+    }
+  }
+  // De-halo: untouched pixels next to the fill are often a white/colour blend.
+  for (let p = 0; p < n; p++) {
+    if (state[p]) continue;
+    const x = p % width;
+    if ((x > 0 && state[p - 1] === 1) || (x < width - 1 && state[p + 1] === 1) || (p >= width && state[p - width] === 1) || (p < n - width && state[p + width] === 1)) {
+      const i = p * 4;
+      if (Math.min(data[i], data[i + 1], data[i + 2]) > 200) unwhite(p, 0.85);
+    }
+  }
+  return cleared / n;
+}
+
+async function toWebp(from, toRelative, maxEdge, { transparent = false } = {}) {
   const target = path.join(PUBLIC, toRelative.replace(/\.(jpe?g|png|webp)$/i, ".webp"));
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  const info = await sharp(from).rotate().resize({ width: maxEdge, height: maxEdge, fit: "inside", withoutEnlargement: true }).webp(WEBP).toFile(target);
+  const resized = sharp(from).rotate().resize({ width: maxEdge, height: maxEdge, fit: "inside", withoutEnlargement: true });
+  if (!transparent) {
+    const info = await resized.webp(WEBP).toFile(target);
+    return { src: publicUrl(path.relative(PUBLIC, target)), width: info.width, height: info.height };
+  }
+  const { data, info } = await resized.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  removeWhiteBackground(data, info.width, info.height);
+  await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).webp({ ...WEBP, alphaQuality: 90 }).toFile(target);
   return { src: publicUrl(path.relative(PUBLIC, target)), width: info.width, height: info.height };
 }
 
-async function convertImages(dir, targetDir, maxEdge) {
+async function convertImages(dir, targetDir, maxEdge, options) {
   if (!fs.existsSync(dir)) return [];
   const files = fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort();
   const images = [];
   for (const file of files) {
     const meta = await sharp(path.join(dir, file)).metadata();
     if ((meta.width ?? 0) < 2) continue; // WordPress slider placeholder (1x1)
-    images.push(await toWebp(path.join(dir, file), path.join(targetDir, file.toLowerCase()), maxEdge));
+    images.push(await toWebp(path.join(dir, file), path.join(targetDir, file.toLowerCase()), maxEdge, options));
   }
   return images;
 }
@@ -102,7 +214,7 @@ for (const r of csv.slice(1)) {
     shortDescription: data.kisa_aciklama.trim(),
     tabs: data.sekmeler.map((tab) => ({ title: tab.baslik, markdown: tab.metin, videos: tab.videolar })),
     videos: data.videolar,
-    images: await convertImages(path.join(folder, "gorseller"), path.join("urunler", slug), MAX_EDGE.product),
+    images: await convertImages(path.join(folder, "gorseller"), path.join("urunler", slug), MAX_EDGE.product, { transparent: true }),
     documents,
     seo: { title: data.seo.title, description: data.seo.meta?.description ?? "" },
   });
@@ -114,17 +226,16 @@ const media = {
   about: await convertImages(path.join(kurumsal, "01_Hakkimizda/gorseller"), "kurumsal/hakkimizda", MAX_EDGE.corporate),
   contact: await convertImages(path.join(kurumsal, "02_Iletisim/gorseller"), "kurumsal/iletisim", MAX_EDGE.corporate),
   products: await convertImages(path.join(kurumsal, "12_Urunler_Sayfasi/gorseller"), "kurumsal/urunler", MAX_EDGE.home),
-  references: await convertImages(path.join(kurumsal, "06_Referanslar/gorseller"), "referanslar", MAX_EDGE.reference),
+  references: await convertImages(path.join(kurumsal, "06_Referanslar/gorseller"), "referanslar", MAX_EDGE.reference, { transparent: true }),
 };
 
 /** Neutral stand-in for products whose real photos are still missing (see docs/research/teknosem/TODO.md). */
 async function placeholder(label, file) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
-    <rect width="1200" height="1200" fill="#f2f3f5"/>
-    <rect x="360" y="420" width="480" height="300" rx="28" fill="none" stroke="#c4c8cf" stroke-width="10"/>
-    <circle cx="470" cy="520" r="38" fill="#c4c8cf"/>
-    <path d="M380 700 L540 560 L640 650 L720 590 L820 700 Z" fill="#c4c8cf"/>
-    <text x="600" y="830" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" fill="#5b6270">${label}</text>
+    <rect x="360" y="420" width="480" height="300" rx="28" fill="none" stroke="#5b6270" stroke-width="10"/>
+    <circle cx="470" cy="520" r="38" fill="#5b6270"/>
+    <path d="M380 700 L540 560 L640 650 L720 590 L820 700 Z" fill="#5b6270"/>
+    <text x="600" y="830" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" fill="#cbcbcb">${label}</text>
     <text x="600" y="900" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="#8a909b">Görsel hazırlanıyor</text>
   </svg>`;
   const target = path.join(PUBLIC, "gecici", file);

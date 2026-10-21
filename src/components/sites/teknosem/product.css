@@ -9,10 +9,10 @@
 .product-hero .breadcrumb [aria-current]{color:#fff}
 
 .product-gallery{display:grid;gap:calc(var(--fs) * 1)}
-.product-gallery .gallery-main{aspect-ratio:1;border-radius:calc(var(--fs) * 1.875);background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.product-gallery .gallery-main{aspect-ratio:1;border-radius:calc(var(--fs) * 1.875);background:radial-gradient(120% 120% at 50% 35%,#2a2b31 0%,#141518 60%,#0c0c0e 100%);box-shadow:inset 0 0 0 1px #ffffff12;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .product-gallery .gallery-main img{width:100%;height:100%;object-fit:contain}
 .product-gallery .gallery-thumbs{display:flex;gap:calc(var(--fs) * .75);flex-wrap:wrap}
-.product-gallery .gallery-thumbs button{width:calc(var(--fs) * 5.5);height:calc(var(--fs) * 5.5);border-radius:calc(var(--fs) * .75);background:#fff;overflow:hidden;opacity:.55;outline:2px solid #0000;outline-offset:2px;transition:opacity .15s ease-in,outline-color .15s ease-in}
+.product-gallery .gallery-thumbs button{width:calc(var(--fs) * 5.5);height:calc(var(--fs) * 5.5);border-radius:calc(var(--fs) * .75);background:radial-gradient(120% 120% at 50% 35%,#2a2b31 0%,#141518 60%,#0c0c0e 100%);box-shadow:inset 0 0 0 1px #ffffff12;overflow:hidden;opacity:.55;outline:2px solid #0000;outline-offset:2px;transition:opacity .15s ease-in,outline-color .15s ease-in}
 .product-gallery .gallery-thumbs button:hover{opacity:.85}
 .product-gallery .gallery-thumbs button.active{opacity:1;outline-color:var(--MAIN-BLUE)}
 .product-gallery .gallery-thumbs img{width:100%;height:100%;object-fit:contain}
