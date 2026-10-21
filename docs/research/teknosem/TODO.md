@@ -41,3 +41,8 @@ Kaynağın İndirmeler sayfasında olup arşivde dosyası olmayanlar listeden ç
 - `zimpara-hucresi` → TGM-1000, TGM-1000 Double Task
 - `basik-2.jpg` → iLW-Cell, iLW-Desk
 - TK-7'nin 6 görselinden 5'i TK-5 ile aynı (olduğu gibi kalacak)
+
+## Arşiv görselleri (docs/teknosem-icerik, git dışında)
+- Ürün görselleri (114) ve referans logoları (32) şeffaf PNG'ye çevrildi (`scripts/teknosem/export-transparent-png.mjs`).
+  Orijinal JPG/PNG/WebP dosyaları `docs/teknosem-icerik/_orijinal_yedek/` altında aynı klasör yapısıyla duruyor; `icerik.md` görsel listeleri yeni adlara güncellendi.
+- `diger_gorseller/dENEME-3-11-scaled.jpg` sitede kullanılmadığı için dönüştürülmedi.
