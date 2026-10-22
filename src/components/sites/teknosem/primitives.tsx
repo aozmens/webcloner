@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import type { ImageAsset } from "./content";
+import type { ImageAsset } from "./media";
 
 export function PrimaryButton({ href, children, external }: { href: string; children: ReactNode; external?: boolean }) {
   return (
@@ -43,10 +43,6 @@ export function Picture({ image, alt, className, sizes, priority, style }: Pictu
 }
 
 /** Rounded light tile for product renders, which are shot on white backgrounds. */
-export function ProductThumb({ image, size = 96 }: { image: ImageAsset; size?: number }) {
-  return (
-    <span className="product-thumb">
-      <Image src={image.src} alt="" width={size} height={size} sizes={`${size}px`} />
-    </span>
-  );
+export function ProductThumb({ image, size = 96 }: { image?: ImageAsset; size?: number }) {
+  return <span className="product-thumb">{image && <Image src={image.src} alt="" width={size} height={size} sizes={`${size}px`} />}</span>;
 }

@@ -1,4 +1,4 @@
-import { pageHref, productsHref } from "./content";
+import { pageHref, productsHref } from "./links";
 import { PrimaryButton } from "./primitives";
 
 export function NotFoundPage() {

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Work_Sans } from "next/font/google";
 import "./globals.css";
-import "@/components/sites/teknosem/teknosem-adaptation.css";
 import { allowIndexing, siteUrl } from "@/components/sites/teknosem/site-config";
 
 const workSans = Work_Sans({

@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
-import { catalog, pages, products } from "@/components/sites/teknosem/content";
+import { pages } from "@/components/sites/teknosem/links";
 import { allowIndexing, siteUrl } from "@/components/sites/teknosem/site-config";
+import { getSiteData } from "@/components/sites/teknosem/site-data";
 
 /** Every public route. Empty until NEXT_PUBLIC_TEKNOSEM_SITE_URL is set, because sitemaps need absolute URLs. */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!siteUrl || !allowIndexing) return [];
+  const { catalog, products } = await getSiteData();
   const url = (path: string) => `${siteUrl}${path}`;
   return [
     { url: url("/"), priority: 1 },

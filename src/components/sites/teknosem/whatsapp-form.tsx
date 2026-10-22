@@ -2,6 +2,8 @@
 
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import type { SubmissionKind } from "@/lib/supabase/database.types";
+import { submitForm } from "./form-actions";
 
 export type FormField = {
   name: string;
@@ -15,11 +17,27 @@ export type FormField = {
 };
 
 /**
- * No backend yet: the form turns its fields into a ready-made message and opens WhatsApp with it.
- * The visitor sends the message from their own WhatsApp.
+ * The form is saved to the panel (Başvurular) first; then WhatsApp opens with the same text ready to send, and the
+ * visitor sends it from their own WhatsApp.
  */
-export function WhatsAppForm({ subject, fields, whatsappNumber, kvkkHref }: { subject: string; fields: FormField[]; whatsappNumber: string; kvkkHref: string }) {
+export function WhatsAppForm({
+  kind,
+  subject,
+  fields,
+  whatsappNumber,
+  kvkkHref,
+}: {
+  kind: SubmissionKind;
+  subject: string;
+  fields: FormField[];
+  whatsappNumber: string;
+  kvkkHref: string;
+}) {
   const [values, setValues] = useState<Record<string, string>>({});
+  const [website, setWebsite] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<{ message: string; fallbackHref?: string } | null>(null);
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -34,8 +52,7 @@ export function WhatsAppForm({ subject, fields, whatsappNumber, kvkkHref }: { su
 
   const update = (name: string, value: string) => setValues((current) => ({ ...current, [name]: value }));
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
+  const whatsappUrl = () => {
     const lines = fields
       .map((field) => {
         const raw = values[field.name]?.trim();
@@ -45,11 +62,44 @@ export function WhatsAppForm({ subject, fields, whatsappNumber, kvkkHref }: { su
       })
       .filter(Boolean);
     const text = [`*${subject}*`, ...lines].join("\n");
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
+  };
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (pending) return;
+    const url = whatsappUrl();
+    // Browsers only allow a new tab during the click itself, so it is opened now and pointed at WhatsApp once saved.
+    const tab = window.open("", "_blank");
+    setPending(true);
+    setError(null);
+    const result = await submitForm({ kind, values, website }).catch(() => ({
+      ok: false as const,
+      message: "Bağlantı kurulamadı. Mesajınızı WhatsApp ile yine de gönderebilirsiniz.",
+      fallback: true,
+    }));
+    setPending(false);
+    if (!result.ok) {
+      tab?.close();
+      setError({ message: result.message, fallbackHref: result.fallback ? url : undefined });
+      return;
+    }
+    setSent(true);
+    if (tab) {
+      tab.opener = null;
+      tab.location.href = url;
+    } else {
+      window.location.href = url;
+    }
   };
 
   return (
     <form className="whatsapp-form" onSubmit={submit}>
+      {/* Honeypot: hidden from people and screen readers; bots that fill it in are ignored. */}
+      <div className="form-trap" aria-hidden>
+        <label htmlFor={`form-${kind}-website`}>Web siteniz</label>
+        <input id={`form-${kind}-website`} name="website" tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
+      </div>
       {fields.map((field) => {
         const id = `form-${field.name}`;
         const common = {
@@ -67,7 +117,7 @@ export function WhatsAppForm({ subject, fields, whatsappNumber, kvkkHref }: { su
             </label>
             <div className="field">
               {field.type === "textarea" ? (
-                <textarea {...common} rows={6} onChange={(event) => update(field.name, event.target.value)} />
+                <textarea {...common} rows={6} maxLength={5000} onChange={(event) => update(field.name, event.target.value)} />
               ) : field.type === "select" ? (
                 <select {...common} onChange={(event) => update(field.name, event.target.value)}>
                   <option value="">Seçiniz</option>
@@ -78,19 +128,37 @@ export function WhatsAppForm({ subject, fields, whatsappNumber, kvkkHref }: { su
                   ))}
                 </select>
               ) : (
-                <input {...common} type={field.type ?? "text"} onChange={(event) => update(field.name, event.target.value)} />
+                <input {...common} type={field.type ?? "text"} maxLength={200} onChange={(event) => update(field.name, event.target.value)} />
               )}
             </div>
           </div>
         );
       })}
       <div className="form-actions">
-        <p className="form-note">
-          Gönder&apos;e bastığınızda mesajınız WhatsApp&apos;ta hazır olarak açılır. Kişisel verileriniz{" "}
-          <a href={kvkkHref}>KVKK aydınlatma metni</a> kapsamında işlenir.
-        </p>
-        <button type="submit" className="primary-btn">
-          WhatsApp ile Gönder
+        {error ? (
+          <p className="form-note form-error" role="alert">
+            {error.message}
+            {error.fallbackHref && (
+              <>
+                {" "}
+                <a href={error.fallbackHref} target="_blank" rel="noopener">
+                  WhatsApp&apos;ı aç
+                </a>
+              </>
+            )}
+          </p>
+        ) : sent ? (
+          <p className="form-note" role="status">
+            Talebiniz kaydedildi. WhatsApp&apos;ta açılan mesajı göndermeyi unutmayın.
+          </p>
+        ) : (
+          <p className="form-note">
+            Gönder&apos;e bastığınızda talebiniz kaydedilir ve mesajınız WhatsApp&apos;ta hazır olarak açılır. Kişisel verileriniz{" "}
+            <a href={kvkkHref}>KVKK aydınlatma metni</a> kapsamında işlenir.
+          </p>
+        )}
+        <button type="submit" className="primary-btn" disabled={pending} aria-busy={pending}>
+          {pending ? "Gönderiliyor…" : "WhatsApp ile Gönder"}
           <div className="icon">
             <ArrowRight aria-hidden />
           </div>

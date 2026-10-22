@@ -9,7 +9,10 @@ Project → Settings → Environment Variables altına girin. Gerçek değerler 
 | `NEXT_PUBLIC_TEKNOSEM_SITE_URL` | `https://robotik.aoz-tech.com` | canlı alan adı |
 | `NEXT_PUBLIC_TEKNOSEM_ALLOW_INDEXING` | `false` (Google'a kapalı) | `true` |
 | `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API | aynı |
-| `SUPABASE_SERVICE_ROLE_KEY` | yalnızca sunucu; `src/lib/server-env.ts` dışında okunmaz | aynı |
+| `SUPABASE_SERVICE_ROLE_KEY` | yalnızca sunucu; `src/lib/server-env.ts` dışında okunmaz; form kaydı için gerekli | aynı |
+
+Site içeriği Supabase'den okunur: build sırasında Supabase'e erişilebilmeli ve tablolar kurulu olmalı.
+Kurulum, içerik aktarımı ve ilk yönetici için: [YONETIM.md](./YONETIM.md).
 
 `NEXT_PUBLIC_*` değerleri build sırasında koda gömülür: değiştirdikten sonra Vercel'de yeniden deploy gerekir.
 

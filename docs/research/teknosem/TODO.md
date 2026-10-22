@@ -1,7 +1,7 @@
 # Teknosem — bekleyen içerik ve kararlar
 
 Kod tarafındaki karşılıkları: `src/components/sites/teknosem/product-overrides.ts` (ürün istisnaları),
-`content.ts` → `corrections` (metin düzeltmeleri), `site-config.ts` (yayın ayarları).
+`seed.ts` → `corrections` (metin düzeltmeleri; yayındaki metinler panelden, Supabase'de düzenlenir), `site-config.ts` (yayın ayarları).
 
 ## Gerçek içerik bekleniyor
 - [ ] **TY-2000 görselleri** — kaynaktaki 6 görsel TY-1000 dosyalarıydı (üzerinde "TY-1000" yazıyor). Şu an geçici görsel (`public/sites/teknosem/gecici/ty-2000.webp`) gösteriliyor. Gerçek görseller gelince `product-overrides.ts` içindeki `ty-2000.images` kaldırılır.
@@ -29,7 +29,8 @@ Kod tarafındaki karşılıkları: `src/components/sites/teknosem/product-overri
 Kaynağın İndirmeler sayfasında olup arşivde dosyası olmayanlar listeden çıkarıldı: A-1001_V1.12, TK-5_V1.4, TY-1000_V1.11, TY-700_V1.1, teknosem-001, teknosem-002.
 
 ## Karar bekleyen
-- [ ] **Tasarım Dili görseli ve logo** — gelmedi. Renk ve tipografi referans klondaki gibi; logo geçici yazı logosu (`logo.tsx`), favicon geçici "T" ikonu (`src/app/icon.svg`). Gelince bu iki dosya ve `teknosem-adaptation.css` güncellenir.
+- [ ] **Tasarım Dili görseli** — gelmedi. Renk ve tipografi referans klondaki gibi; gelince `teknosem-adaptation.css` güncellenir.
+- [x] **Logo** — resmi logolar kullanılıyor (`public/sites/teknosem/logo/`, favicon `src/app/icon.png`, `scripts/teknosem/build-logos.mjs`).
 - [ ] **Teklif Al metni** — kaynaktaki "laboratuvar çözümleri" ifadesi ana Teknosem sitesinden kalmış görünüyor; içerik olduğu gibi kullanılıyor.
 - [x] **Yıl bilgisi** — 32 yıl (1994'ten beri) olarak karar verildi; `company.ts` → `experienceYears` sabitinden her yere (ana sayfa ×2, Hakkımızda) uygulanıyor. Her yıl elle güncellenmeli.
 - [x] **YouTube** — hiçbir hesap çıkarılmadan footer'a 4. bağlantı olarak eklendi. Adres içerikteki `https://www.youtube.com/@TeknosemTest` (kaynakta verilen tek adres). Kanal adı test hesabı gibi duruyor: gerçek kanal adresi gelirse `company.ts` → `social.youtube` güncellenir.

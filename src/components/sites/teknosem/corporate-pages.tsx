@@ -1,16 +1,18 @@
-// Corporate pages. Copy is taken verbatim from docs/teknosem-icerik/02_Kurumsal/*/icerik.md; the only edits are
-// the agreed typo fixes ("HDPC" → "HPDC", "İHer" → "Her", "yada" → "ya da").
+// Corporate pages. Texts edited in the panel (Hakkımızda, Hizmetler, KVKK, contact details) come from
+// site_settings; the rest is the copy from docs/teknosem-icerik/02_Kurumsal/*/icerik.md with the agreed typo
+// fixes ("HDPC" → "HPDC", "İHer" → "Her", "yada" → "ya da").
 
-import fs from "node:fs";
-import path from "node:path";
-import { FileDown, KeyRound, Mail, MapPin, MessageCircle, PackageCheck, PenTool, Phone, Wrench, type LucideIcon } from "lucide-react";
+import { FileDown, Mail, MapPin, MessageCircle, Phone, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import kvkkJson from "./content/kvkk.json";
-import { catalog, company, manuals, media, pageHref, pages, product, productHref, shortName, type PageKey } from "./content";
 import { ExpertSection } from "./home-sections";
+import { iconFor } from "./icons";
+import { formatSize, pageHref, pages, productHref, type PageKey } from "./links";
+import { media } from "./media";
 import { LineElement, PrimaryButton } from "./primitives";
+import { paragraphs, withYears, type ContactInfo } from "./settings";
+import { getSiteData, type Category } from "./site-data";
 import { WhatsAppForm, type FormField } from "./whatsapp-form";
 
 function PageHero({ page, eyebrow, title, children, image }: { page: PageKey; eyebrow?: string; title: string; children?: ReactNode; image?: { src: string; width: number; height: number; alt: string } }) {
@@ -48,71 +50,44 @@ function IconCard({ icon: Icon, title, children }: { icon: LucideIcon; title: st
   );
 }
 
-function ContactButtons() {
+function ContactButtons({ contact }: { contact: ContactInfo }) {
   return (
     <div className="product-actions">
-      <a className="secondary-btn" href={company.phoneHref}>
+      <a className="secondary-btn" href={contact.phoneHref}>
         <Phone aria-hidden strokeWidth={1.5} />
-        {company.phone}
+        {contact.phone}
       </a>
-      <a className="secondary-btn" href={`mailto:${company.email}`}>
+      <a className="secondary-btn" href={`mailto:${contact.email}`}>
         <Mail aria-hidden strokeWidth={1.5} />
-        {company.email}
+        {contact.email}
       </a>
     </div>
   );
 }
 
-const productOptions = catalog.flatMap((category) =>
-  category.groups.flatMap((group) => group.products.map((slug) => ({ value: slug, label: `${shortName(product(slug))} — ${category.title}` }))),
-);
+const productOptions = (catalog: Category[]) =>
+  catalog.flatMap((category) => category.groups.flatMap((group) => group.products.map((p) => ({ value: p.slug, label: `${p.shortName} — ${category.title}` }))));
 
 const kvkkHref = pageHref("kvkk");
 
 /* ---------------------------------------------------------------- Hakkımızda */
 
-export function AboutPage() {
+export async function AboutPage() {
+  const { settings, contact } = await getSiteData();
+  const { about } = settings;
+  const years = (text: string) => withYears(text, contact.experienceYears);
   const image = media.about[0];
   return (
     <>
-      <PageHero page="about" eyebrow="TEKNOSEM" title="Teknolojik Çözüm Ortağınız" image={{ ...image, alt: "Teknosem Robotic Automation System" }}>
-        <p className="paragraph-1 text-start">
-          Teknosem Test ve Analiz Cihazları Teknoloji Araştırma Sanayi Dış Ticaret A.Ş., 1994 yılında şahıs şirketi olarak kurulmuş ve üretime
-          başlamıştır. Kuruluşundan bu yana Teknosem, test ve analiz cihazları ile robotik otomasyon sistemleri alanında faaliyet göstermektedir.
-          Üretim ve yazılım süreçlerini kendi bünyesinde geliştirerek, müşterilerine anahtar teslim projeler sunmaktadır. Bu sayede, sektörde
-          güvenilir ve yenilikçi çözümler üreterek, kullanıcılarına en yüksek verimliliği ve kaliteyi sağlamaktadır.
-        </p>
+      <PageHero page="about" eyebrow={about.eyebrow} title={about.title} image={{ ...image, alt: "Teknosem Robotic Automation System" }}>
+        <p className="paragraph-1 text-start">{years(about.intro)}</p>
       </PageHero>
       <section className="corporate-section product-reveal">
-        <h2 className="h2">Hakkımızda</h2>
+        <h2 className="h2">{about.heading}</h2>
         <div className="product-prose">
-          <p>
-            Teknosem Test ve Analiz Cihazları Teknoloji Araştırma Sanayi Dış Ticaret A.Ş., 1994 yılında şahıs şirketi olarak kurulmuş ve üretime
-            başlamıştır. 2006 yılında adını ve vizyonunu yenileyerek, hedeflerine ulaşmak için çalışmalarına hız kazandırmıştır. Güçlü altyapısı ve
-            kurumsal kimliği ile sektördeki {company.experienceYears} yıllık tecrübesini kullanarak, Türkiye’de test ve analiz cihazları ile robotik otomasyon sistemleri
-            alanında öncü adımlar atmaya devam etmektedir.
-          </p>
-          <p>
-            Kuruluşundan bu yana Teknosem, test ve analiz cihazları ile robotik otomasyon sistemleri alanında faaliyet göstermektedir. Üretim ve
-            yazılım süreçlerini kendi bünyesinde geliştirerek, müşterilerine anahtar teslim projeler sunmaktadır. Bu sayede, sektörde güvenilir ve
-            yenilikçi çözümler üreterek, kullanıcılarına en yüksek verimliliği ve kaliteyi sağlamaktadır.
-          </p>
-          <p>
-            Özellikle HPDC Sistemleri başta olmak üzere, farklı enjeksiyon sistemlerine uygun yağlama ve otomatik dozajlama robotları üretmektedir.
-            Bu sistemler, sanayi üretim süreçlerinde verimliliği artırırken, maliyetleri düşürmekte ve üretim hatlarında maksimum hassasiyet
-            sağlamaktadır. Teknosem’in geliştirdiği robotik çözümler, üretim süreçlerini optimize ederken, işletmelere rekabet avantajı
-            kazandırmaktadır.
-          </p>
-          <p>
-            Tasarım ve üretim sürecinde, alanında uzman akademisyenler ve üniversitelerle yapılan iş birlikleri sayesinde üretilen sistemlerin
-            bilimselliği ve güncelliği en üst seviyede tutulmaktadır. Teknosem, sadece teknolojiyi takip eden değil, yeni teknolojiler üreten bir
-            firma olma vizyonuyla hareket etmekte ve insana, çevreye duyarlı üretim anlayışını benimsemektedir.
-          </p>
-          <p>
-            Teknosem, Ar-Ge çalışmalarıyla sektöre yenilikçi çözümler sunmaya devam ederken, kaliteli, dayanıklı ve yüksek performanslı test
-            cihazları ve robotik otomasyon sistemleri ile geleceğe yön vermeyi amaçlamaktadır. Müşteri odaklı yaklaşımı ve sürekli gelişim anlayışı
-            ile sektördeki lider konumunu pekiştirerek, ulusal ve uluslararası arenada başarılarına yenilerini eklemektedir.
-          </p>
+          {paragraphs(years(about.body)).map((text) => (
+            <p key={text}>{text}</p>
+          ))}
         </div>
       </section>
       <ExpertSection />
@@ -122,43 +97,19 @@ export function AboutPage() {
 
 /* ---------------------------------------------------------------- Hizmetler */
 
-const services: { icon: LucideIcon; title: string; text: string }[] = [
-  {
-    icon: KeyRound,
-    title: "Anahtar Teslim Projeler",
-    text: "Müşterilerimizin ihtiyaçlarına özel olarak tasarlanan anahtar teslim projeler sunuyoruz. Üretim tesisleri için eksiksiz sistem entegrasyonu sağlayarak, verimli ve sorunsuz bir çalışma ortamı oluşturuyoruz.",
-  },
-  {
-    icon: Wrench,
-    title: "Teknik Servis ve Satış Sonrası Destek",
-    text: "Ürünlerimizin uzun ömürlü ve sorunsuz çalışmasını sağlamak için kapsamlı teknik servis ve satış sonrası destek hizmeti sunuyoruz. Hızlı müdahale ve yerinde servis imkanlarımızla müşteri memnuniyetini en üst seviyede tutuyoruz.",
-  },
-  {
-    icon: PackageCheck,
-    title: "Yedek Parça Teminatı",
-    text: "Garantisi Dolmuş olan cihazlarınızın yedek parçalarını firmamızdan temin edebilirsiniz. Garantisi Bitmeyen cihazlarımız için dışarıdan alıp takılan parçalar cihazınızı garanti dışı bırakır.",
-  },
-  {
-    icon: PenTool,
-    title: "İsteğe Özel Aksesuar Tasarımı",
-    text: "Endüstriyel üretim süreçlerini hızlandırmak, maliyetleri azaltmak ve verimliliği artırmak amacıyla özelleştirilmiş robotik sistemleri tasarlayıp üretiyoruz.",
-  },
-];
-
-export function ServicesPage() {
+export async function ServicesPage() {
+  const { settings, contact } = await getSiteData();
+  const { services } = settings;
   return (
     <>
-      <PageHero page="services" eyebrow="TEKNOSEM" title="Teknosem Robotik Hizmetleri">
-        <p className="paragraph-1 text-start">
-          Teknosem olarak, robotik otomasyon sistemleri alanında yenilikçi ve güvenilir çözümler sunuyoruz. Üretim ve yazılım süreçlerini kendi
-          bünyemizde geliştirerek, müşterilerimize yüksek kalite standartlarında hizmet sağlıyoruz.
-        </p>
-        <p className="corporate-tagline">Verimliliği Artıran Akıllı Sistemler Teknosem’de!</p>
+      <PageHero page="services" eyebrow="TEKNOSEM" title={services.title}>
+        <p className="paragraph-1 text-start">{services.intro}</p>
+        {services.tagline && <p className="corporate-tagline">{services.tagline}</p>}
       </PageHero>
       <section className="corporate-section product-reveal">
         <div className="corporate-cards">
-          {services.map((service) => (
-            <IconCard key={service.title} icon={service.icon} title={service.title}>
+          {services.cards.map((service, index) => (
+            <IconCard key={index} icon={iconFor(service.icon)} title={service.title}>
               <p>{service.text}</p>
             </IconCard>
           ))}
@@ -167,18 +118,13 @@ export function ServicesPage() {
       <section className="corporate-section corporate-split product-reveal">
         <div>
           <LineElement> Teknosem </LineElement>
-          <h2 className="h2">Uzmanlarımıza Danışın</h2>
+          <h2 className="h2">{services.consultTitle}</h2>
         </div>
         <div className="product-prose">
-          <p>
-            Her sorununuz için doğru çözümler sunan deneyimli ekibimiz yanınızda! İhtiyaç duyduğunuz tüm bilgileri, teknik destek ve ürün
-            tavsiyelerini uzmanlarımızla görüşerek öğrenebilirsiniz.
-          </p>
-          <p>
-            Teknik sorularınız, proje talepleriniz ya da danışmanlık ihtiyaçlarınız için hemen bizimle iletişime geçin! Uzmanlarımız, size en kısa
-            sürede geri dönüş yaparak ihtiyaçlarınıza yönelik çözümler sunacaktır.
-          </p>
-          <ContactButtons />
+          {paragraphs(services.consultText).map((text) => (
+            <p key={text}>{text}</p>
+          ))}
+          <ContactButtons contact={contact} />
         </div>
       </section>
     </>
@@ -187,15 +133,16 @@ export function ServicesPage() {
 
 /* ---------------------------------------------------------------- Referanslar */
 
-export function ReferencesPage() {
+export async function ReferencesPage() {
+  const { logos } = await getSiteData();
   return (
     <>
       <PageHero page="references" eyebrow="TEKNOSEM" title="Referanslarımız" />
       <section className="corporate-section product-reveal">
         <div className="reference-grid">
-          {media.references.map((logo, index) => (
+          {logos.map((logo, index) => (
             <span key={logo.src} className="logo-tile">
-              <Image src={logo.src} alt={`Teknosem referansı ${index + 1}`} width={logo.width} height={logo.height} sizes="200px" />
+              <Image src={logo.src} alt={logo.alt || `Teknosem referansı ${index + 1}`} width={logo.width} height={logo.height} sizes="200px" />
             </span>
           ))}
         </div>
@@ -207,13 +154,8 @@ export function ReferencesPage() {
 
 /* ---------------------------------------------------------------- İndirmeler */
 
-function fileSize(src: string) {
-  const file = path.join(process.cwd(), "public", src);
-  const mb = fs.statSync(file).size / 1024 / 1024;
-  return `${mb.toLocaleString("tr-TR", { maximumFractionDigits: 1 })} MB`;
-}
-
-export function DownloadsPage() {
+export async function DownloadsPage() {
+  const { manuals } = await getSiteData();
   return (
     <>
       <PageHero page="downloads" eyebrow="TEKNOSEM" title="İndirme Merkezi">
@@ -223,14 +165,26 @@ export function DownloadsPage() {
         <h2 className="h2">Kullanım Kılavuzları</h2>
         <ul className="download-list">
           {manuals.map((manual) => (
-            <li key={manual.src} className="download-item with-border">
+            <li key={manual.id} className="download-item with-border">
               <FileDown aria-hidden strokeWidth={1.25} className="download-icon" />
               <div className="download-info">
                 <strong>
-                  {manual.model} Kullanım Kılavuzu · {manual.version}
+                  {manual.title}
+                  {manual.version && ` · ${manual.version}`}
                 </strong>
                 <span>
-                  <a href={productHref(manual.product)}>{manual.product.name}</a> · {manual.date} · PDF · {fileSize(manual.src)}
+                  {[
+                    manual.product && (
+                      <a key="product" href={productHref(manual.product)}>
+                        {manual.product.name}
+                      </a>
+                    ),
+                    manual.date,
+                    "PDF",
+                    formatSize(manual.size),
+                  ]
+                    .filter(Boolean)
+                    .flatMap((part, index) => (index > 0 ? [" · ", part] : [part]))}
                 </span>
               </div>
               <a className="secondary-btn" href={manual.src} target="_blank" rel="noopener" download>
@@ -257,20 +211,21 @@ const contactFields: FormField[] = [
   { name: "mesaj", label: "Mesajınız", type: "textarea", required: true },
 ];
 
-export function ContactPage() {
+export async function ContactPage() {
+  const { contact } = await getSiteData();
   const image = media.contact[0];
   const rows: { icon: LucideIcon; label: string; href: string }[] = [
-    { icon: Phone, label: company.phone, href: company.phoneHref },
-    { icon: Mail, label: company.email, href: `mailto:${company.email}` },
-    { icon: MessageCircle, label: `WhatsApp: ${company.whatsapp}`, href: company.whatsappHref },
-    { icon: MapPin, label: company.address, href: "#harita" },
+    { icon: Phone, label: contact.phone, href: contact.phoneHref },
+    { icon: Mail, label: contact.email, href: `mailto:${contact.email}` },
+    { icon: MessageCircle, label: `WhatsApp: ${contact.whatsapp}`, href: contact.whatsappHref },
+    { icon: MapPin, label: contact.address, href: "#harita" },
   ];
   const social = [
-    { label: "Linkedin", href: company.social.linkedin },
-    { label: "Facebook", href: company.social.facebook },
-    { label: "Instagram", href: company.social.instagram },
-    { label: "Youtube", href: company.social.youtube },
-  ];
+    { label: "Linkedin", href: contact.social.linkedin },
+    { label: "Facebook", href: contact.social.facebook },
+    { label: "Instagram", href: contact.social.instagram },
+    { label: "Youtube", href: contact.social.youtube },
+  ].filter((item) => item.href);
   return (
     <>
       <PageHero page="contact" title="Bize Ulaşın" image={{ ...image, alt: "Teknosem" }}>
@@ -300,7 +255,7 @@ export function ContactPage() {
             bizimle iletişime geçebilirsiniz.
           </p>
         </div>
-        <WhatsAppForm subject="İletişim formu (teknosem web sitesi)" fields={contactFields} whatsappNumber={company.whatsappNumber} kvkkHref={kvkkHref} />
+        <WhatsAppForm kind="contact" subject="İletişim formu (teknosem web sitesi)" fields={contactFields} whatsappNumber={contact.whatsappNumber} kvkkHref={kvkkHref} />
       </section>
       <section className="corporate-section product-reveal" id="harita">
         <div className="map-frame">
@@ -313,22 +268,22 @@ export function ContactPage() {
 
 /* ---------------------------------------------------------------- Teklif Al */
 
-const quoteFields: FormField[] = [
-  { name: "adSoyad", label: "Ad Soyad", required: true, autoComplete: "name" },
-  { name: "firma", label: "Firma", autoComplete: "organization" },
-  { name: "telefon", label: "Telefon", type: "tel", required: true, autoComplete: "tel" },
-  { name: "eposta", label: "E-posta", type: "email", autoComplete: "email" },
-  { name: "urun", label: "İlgilendiğiniz ürün", type: "select", options: productOptions, queryParam: "urun" },
-  { name: "mesaj", label: "Mesajınız", type: "textarea", required: true },
-];
-
 const quoteSteps = [
   { title: "Formu Doldurun", text: "Gereken bilgileri eksiksiz doldurarak gönderin." },
   { title: "Uzmanlarımız İncelesin", text: "Talepleriniz doğrultusunda detaylı inceleme yapılır." },
   { title: "Teklifinizi Alın", text: "En uygun fiyat ve çözüm önerileri kısa sürede size sunulur." },
 ];
 
-export function QuotePage() {
+export async function QuotePage() {
+  const { catalog, contact } = await getSiteData();
+  const quoteFields: FormField[] = [
+    { name: "adSoyad", label: "Ad Soyad", required: true, autoComplete: "name" },
+    { name: "firma", label: "Firma", autoComplete: "organization" },
+    { name: "telefon", label: "Telefon", type: "tel", required: true, autoComplete: "tel" },
+    { name: "eposta", label: "E-posta", type: "email", autoComplete: "email" },
+    { name: "urun", label: "İlgilendiğiniz ürün", type: "select", options: productOptions(catalog), queryParam: "urun" },
+    { name: "mesaj", label: "Mesajınız", type: "textarea", required: true },
+  ];
   return (
     <>
       <PageHero page="quote" eyebrow="TEKNOSEM" title="İhtiyaçlarınıza Özel Laboratuvar Çözümleri Sunuyoruz!">
@@ -358,7 +313,7 @@ export function QuotePage() {
             doldurun. Uzman ekibimiz en kısa sürede sizinle iletişime geçecektir.
           </p>
         </div>
-        <WhatsAppForm subject="Teklif talebi (teknosem web sitesi)" fields={quoteFields} whatsappNumber={company.whatsappNumber} kvkkHref={kvkkHref} />
+        <WhatsAppForm kind="quote" subject="Teklif talebi (teknosem web sitesi)" fields={quoteFields} whatsappNumber={contact.whatsappNumber} kvkkHref={kvkkHref} />
       </section>
     </>
   );
@@ -366,15 +321,15 @@ export function QuotePage() {
 
 /* ---------------------------------------------------------------- Servis Talebi */
 
-const serviceFields: FormField[] = [
-  { name: "adSoyad", label: "Ad Soyad", required: true, autoComplete: "name" },
-  { name: "firma", label: "Firma", autoComplete: "organization" },
-  { name: "telefon", label: "Telefon", type: "tel", required: true, autoComplete: "tel" },
-  { name: "urun", label: "Ürün", type: "select", options: productOptions, queryParam: "urun" },
-  { name: "talep", label: "Talebiniz", type: "textarea", required: true },
-];
-
-export function ServiceRequestPage() {
+export async function ServiceRequestPage() {
+  const { catalog, contact } = await getSiteData();
+  const serviceFields: FormField[] = [
+    { name: "adSoyad", label: "Ad Soyad", required: true, autoComplete: "name" },
+    { name: "firma", label: "Firma", autoComplete: "organization" },
+    { name: "telefon", label: "Telefon", type: "tel", required: true, autoComplete: "tel" },
+    { name: "urun", label: "Ürün", type: "select", options: productOptions(catalog), queryParam: "urun" },
+    { name: "talep", label: "Talebiniz", type: "textarea", required: true },
+  ];
   return (
     <>
       <PageHero page="service" eyebrow="TEKNOSEM" title="Servis Talebi">
@@ -389,12 +344,12 @@ export function ServiceRequestPage() {
             sağlıyoruz. Uzman ekibimiz, cihazlarınızın sorunsuz bir şekilde çalışmasını sağlamak için her zaman yanınızda.
           </p>
           <div className="product-actions">
-            <PrimaryButton href={company.whatsappHref} external>
+            <PrimaryButton href={contact.whatsappHref} external>
               WhatsApp Destek Hattı
             </PrimaryButton>
           </div>
         </div>
-        <WhatsAppForm subject="Servis talebi (teknosem web sitesi)" fields={serviceFields} whatsappNumber={company.whatsappNumber} kvkkHref={kvkkHref} />
+        <WhatsAppForm kind="service" subject="Servis talebi (teknosem web sitesi)" fields={serviceFields} whatsappNumber={contact.whatsappNumber} kvkkHref={kvkkHref} />
       </section>
     </>
   );
@@ -402,7 +357,8 @@ export function ServiceRequestPage() {
 
 /* ---------------------------------------------------------------- İnsan Kaynakları */
 
-export function CareersPage() {
+export async function CareersPage() {
+  const { contact } = await getSiteData();
   return (
     <>
       <PageHero page="careers" eyebrow="TEKNOSEM" title="Teknosem Ailesine Katılın: Birlikte Geleceği Tasarlayalım">
@@ -431,9 +387,9 @@ export function CareersPage() {
       </section>
       <section className="corporate-section apply-box product-reveal">
         <h2 className="h2">Şimdi Başvurun</h2>
-        <a className="apply-mail" href={`mailto:${company.email}`}>
+        <a className="apply-mail" href={`mailto:${contact.email}`}>
           <Mail aria-hidden strokeWidth={1.5} />
-          {company.email}
+          {contact.email}
         </a>
       </section>
     </>
@@ -442,12 +398,12 @@ export function CareersPage() {
 
 /* ---------------------------------------------------------------- KVKK */
 
-const kvkk = kvkkJson as string[];
 const isKvkkHeading = (text: string) => text.length <= 80 && !/[.;:,]$/.test(text);
 const isKvkkItem = (text: string) => /^[a-zçğ]\.\s/.test(text);
 
-export function KvkkPage() {
-  const [title, ...body] = kvkk;
+export async function KvkkPage() {
+  const { settings } = await getSiteData();
+  const body = paragraphs(settings.kvkk.body);
   const blocks: ReactNode[] = [];
   for (let i = 0; i < body.length; i++) {
     const text = body[i];
@@ -467,7 +423,7 @@ export function KvkkPage() {
   return (
     <>
       <PageHero page="kvkk" title={pages.kvkk.label}>
-        <p className="corporate-tagline">{title}</p>
+        <p className="corporate-tagline">{settings.kvkk.title}</p>
       </PageHero>
       <section className="corporate-section product-reveal">
         <div className="product-prose legal-text">{blocks}</div>

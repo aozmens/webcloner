@@ -1,32 +1,51 @@
 import { FileDown } from "lucide-react";
 import Link from "next/link";
-import { categoryHref, pageHref, pages, productHref, productPlacement, productsHref, type Product } from "./content";
 import { ExpertSection } from "./home-sections";
+import { categoryHref, pageHref, pages, productHref, productsHref } from "./links";
 import { LineElement, PrimaryButton, ProductThumb } from "./primitives";
 import { ProductGallery } from "./product-gallery";
-import { MarkdownBlocks, parseTab } from "./product-markdown";
 import { ProductTabs, type TabPanel } from "./product-tabs";
+import { cleanHtml } from "./rich-text";
+import type { Product, SpecRow } from "./site-data";
 
-const youtubeId = (url: string) => url.match(/embed\/([\w-]+)/)?.[1];
+export const youtubeId = (url: string) => url.match(/(?:embed\/|youtu\.be\/|[?&]v=|shorts\/)([\w-]{11})/)?.[1];
 
-export function ProductPage({ product }: { product: Product }) {
-  const { category, group, siblings } = productPlacement(product.slug);
-  // Tabs are looked up by title: overrides can remove one (e.g. a hidden spec table).
-  const tab = (title: string) => product.tabs.find((t) => t.title === title);
-  const descriptionTab = tab("Açıklama") ?? product.tabs[0];
-  const specsTab = tab("Teknik Detaylar");
-  const videoTab = tab("Video");
-  const description = parseTab(descriptionTab.markdown, descriptionTab.title);
-  const specs = specsTab ? parseTab(specsTab.markdown, specsTab.title) : null;
-  const videos = [...new Set([...(videoTab?.videos ?? []), ...product.videos])].filter((url) => youtubeId(url));
+function SpecTable({ rows }: { rows: SpecRow[] }) {
+  return (
+    <div className="product-prose">
+      <table className="spec-table">
+        <tbody>
+          {rows.map(({ label, value }, index) =>
+            value ? (
+              <tr key={index}>
+                <th scope="row">{label}</th>
+                <td>{value}</td>
+              </tr>
+            ) : (
+              <tr key={index} className="group-row">
+                <th scope="rowgroup" colSpan={2}>
+                  {label}
+                </th>
+              </tr>
+            ),
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function ProductPage({ product, siblings }: { product: Product; siblings: Product[] }) {
+  const description = cleanHtml(product.descriptionHtml);
+  const videos = product.videos.filter((url) => youtubeId(url));
 
   const panels: TabPanel[] = [];
-  if (description.blocks.length > 0) panels.push({ id: "aciklama", title: descriptionTab.title, content: <MarkdownBlocks blocks={description.blocks} /> });
-  if (specsTab && specs && specs.blocks.length > 0) panels.push({ id: "teknik", title: specsTab.title, content: <MarkdownBlocks blocks={specs.blocks} /> });
+  if (description) panels.push({ id: "aciklama", title: "Açıklama", content: <div className="product-prose" dangerouslySetInnerHTML={{ __html: description }} /> });
+  if (product.specs.length > 0) panels.push({ id: "teknik", title: "Teknik Detaylar", content: <SpecTable rows={product.specs} /> });
   if (videos.length > 0) {
     panels.push({
       id: "video",
-      title: videoTab?.title ?? "Video",
+      title: "Video",
       content: (
         <div className="product-videos">
           {videos.map((url, index) => (
@@ -45,6 +64,8 @@ export function ProductPage({ product }: { product: Product }) {
     });
   }
 
+  const { manual } = product;
+
   return (
     <>
       <section className="product-hero">
@@ -54,13 +75,13 @@ export function ProductPage({ product }: { product: Product }) {
           <span aria-hidden>/</span>
           <a href={productsHref}>Ürünler</a>
           <span aria-hidden>/</span>
-          <a href={categoryHref(category)}>{category.title}</a>
+          <a href={categoryHref(product.category)}>{product.category.title}</a>
           <span aria-hidden>/</span>
           <span aria-current="page">{product.name}</span>
         </div>
         <ProductGallery images={product.images} name={product.name} />
         <div className="product-summary">
-          <LineElement> {group.title} </LineElement>
+          <LineElement> {product.group.title} </LineElement>
           <h1 className="h1">
             {product.name.split(" ").map((word, index) => (
               <span key={index}>
@@ -73,12 +94,12 @@ export function ProductPage({ product }: { product: Product }) {
           <p className="paragraph-1 text-start">{product.shortDescription}</p>
           <div className="product-actions">
             <PrimaryButton href={`${pageHref("quote")}?urun=${product.slug}`}>{pages.quote.label}</PrimaryButton>
-            {product.documents.map((doc) => (
-              <a key={doc.src} className="secondary-btn" href={doc.src} target="_blank" rel="noopener" download>
+            {manual && (
+              <a className="secondary-btn" href={manual.src} target="_blank" rel="noopener" download>
                 <FileDown aria-hidden strokeWidth={1.5} />
-                Kullanım Kılavuzu ({doc.model}, {doc.version})
+                Kullanım Kılavuzu ({[manual.model, manual.version].filter(Boolean).join(", ") || manual.title})
               </a>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -89,16 +110,20 @@ export function ProductPage({ product }: { product: Product }) {
         </section>
       )}
 
-      {description.faq.length > 0 && (
+      {product.faq.length > 0 && (
         <section className="product-faq product-reveal">
-          <h2 className="h2">{description.faqTitle}</h2>
+          <h2 className="h2">{product.faqTitle}</h2>
           <div className="faq-list">
-            {description.faq.map((item) => (
+            {product.faq.map((item) => (
               <details key={item.question} className="faq-item">
                 <summary>{item.question}</summary>
-                {item.answer.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
+                {item.answer
+                  .split(/\n+/)
+                  .map((paragraph) => paragraph.trim())
+                  .filter(Boolean)
+                  .map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
               </details>
             ))}
           </div>
@@ -107,7 +132,7 @@ export function ProductPage({ product }: { product: Product }) {
 
       {siblings.length > 0 && (
         <section className="product-related product-reveal">
-          <h2 className="h2">{group.title}</h2>
+          <h2 className="h2">{product.group.title}</h2>
           <div className="related-list">
             {siblings.map((sibling) => (
               <a key={sibling.slug} href={productHref(sibling)} className="related-card with-border">

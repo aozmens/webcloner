@@ -1,69 +1,11 @@
-import { ArrowRight, Award, Box, ChevronsDown, FlaskConical, KeyRound, PackageCheck, PenTool, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, ChevronsDown, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import { company, leadSentence, media, pageHref, pages, product, productHref, productsHref, type ImageAsset } from "./content";
+import { iconFor } from "./icons";
+import { leadSentence, pageHref, pages, productHref, productsHref } from "./links";
+import { media, mediaByName } from "./media";
 import { LineElement, Picture, PrimaryButton } from "./primitives";
-
-const mediaByName = (list: ImageAsset[], name: string) => {
-  const found = list.find((image) => image.src.includes(name));
-  if (!found) throw new Error(`Missing Teknosem image: ${name}`);
-  return found;
-};
-
-type HeroSlide = {
-  slug: string;
-  eyebrow: string;
-  step: string;
-  image: ImageAsset;
-  /** Renders shot on white are shown whole on a white slide instead of being cropped to 16:9. */
-  fit: "cover" | "contain";
-  position?: string;
-};
-
-const heroSlides: HeroSlide[] = [
-  { slug: "ty-1000", eyebrow: "Spreyleme Üniteleri", step: "TY-1000", image: mediaByName(media.products, "deneme-15"), fit: "cover", position: "50% 45%" },
-  { slug: "tru-13", eyebrow: "Robotik Uygulamalar", step: "TRU-13", image: mediaByName(media.home, "katalog-karakaya"), fit: "cover" },
-  { slug: "ilc-cell", eyebrow: "Robotik Lazer Sistemleri", step: "iLC-Cell", image: product("ilc-cell").images[0], fit: "contain" },
-  { slug: "tk-5", eyebrow: "Otomatik Kepçe Sistemleri", step: "TK-5", image: product("tk-5").images[1], fit: "contain" },
-];
-
-const reasons: { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: Box, title: "3D Özelleştirilmiş Üretim Çözümleri", text: "Fabrikanızda yapılan incelemeler sonrasında sizlere özel robotik hat çözümleri geliştirmekte." },
-  {
-    icon: PackageCheck,
-    title: "Yedek Parça Teminatı",
-    text: "Yedek parça teminatı, bir ürünün veya cihazın kullanımı sırasında meydana gelebilecek arızalar ya da aşınmalar için gerekli parçaların sağlanması sürecidir.",
-  },
-  { icon: PenTool, title: "İsteğe Özel Aksesuar Tasarımı", text: "Müşterilerimizin ihtiyaçları doğrultusunda özel imalat robot toolları geliştirmekteyiz." },
-  {
-    icon: ShieldCheck,
-    title: "Üretici Firma Garantisi",
-    text: "Teknosem olarak, üretici firma garantisi kapsamında müşterilerimize ürünlerimizin kalitesine ve dayanıklılığına dair güvence sunmaktayız.",
-  },
-];
-
-const strengths: { icon: LucideIcon; title: string; text: string }[] = [
-  {
-    icon: FlaskConical,
-    title: "Yenilikçi ve Güçlü Ar-Ge Altyapısı",
-    text: "Teknosem, test ve analiz cihazları ile robotik otomasyon sistemleri alanında ileri düzey Ar-Ge çalışmaları yaparak, sektöre yenilikçi çözümler sunmaktadır.",
-  },
-  {
-    icon: KeyRound,
-    title: "Anahtar Teslim Çözümler",
-    text: "Üretim ve yazılım süreçlerini kendi bünyesinde geliştiren Teknosem, müşteri ihtiyaçlarına özel anahtar teslim projeler sunarak verimli ve entegre çözümler sağlar.",
-  },
-  {
-    icon: Award,
-    title: `${company.experienceYears} Yıllık Tecrübe ve Güven`,
-    text: "1994 yılından beri sektörde var olan Teknosem, güçlenerek gelen altyapısı ve deneyimli ekibi ile güvenilir, kaliteli ve yüksek performanslı ürünler üretmektedir.",
-  },
-];
-
-const showcase = [
-  { step: "HPDC Robot Sistemleri", slug: "ty-700-multi-axis", image: 0 },
-  { step: "Robotik Uygulamalar", slug: "robotik-polisaj", image: 1 },
-  { step: "Yardımcı Ekipman ve Aksesuarlar", slug: "tnd-4", image: 0 },
-];
+import { withYears } from "./settings";
+import { getSiteData, settingImage } from "./site-data";
 
 function IconBadge({ icon: Icon, className }: { icon: LucideIcon; className: string }) {
   return (
@@ -82,21 +24,25 @@ function ProgressBar({ id, variant }: { id: string; variant: "mobile-horizontal 
   );
 }
 
-export function HeroSection() {
+export async function HeroSection() {
+  const { settings, product } = await getSiteData();
+  // Slides whose product is unpublished (or has no image) are skipped.
+  const slides = settings.hero.slides.flatMap((slide) => {
+    const p = product(slide.productSlug);
+    const image = settingImage(slide.image, p);
+    return p && image ? [{ ...slide, product: p, image, fit: slide.fit === "contain" ? "contain" : "cover" }] : [];
+  });
   return (
     <section id="hero-section">
       <div className="hero-content">
-        {heroSlides.map((slide, index) => {
-          const p = product(slide.slug);
-          return (
-            <div key={slide.slug} className={index === 0 ? "content active" : "content"}>
-              <LineElement> {slide.eyebrow} </LineElement>
-              <h1 className="title h1">{p.name}</h1>
-              <p className="paragraph-1">{leadSentence(p.shortDescription)}</p>
-              <PrimaryButton href={productHref(p)}>İncele</PrimaryButton>
-            </div>
-          );
-        })}
+        {slides.map((slide, index) => (
+          <div key={`${slide.productSlug}-${index}`} className={index === 0 ? "content active" : "content"}>
+            <LineElement> {slide.eyebrow} </LineElement>
+            <h1 className="title h1">{slide.product.name}</h1>
+            <p className="paragraph-1">{leadSentence(slide.product.shortDescription)}</p>
+            <PrimaryButton href={productHref(slide.product)}>İncele</PrimaryButton>
+          </div>
+        ))}
       </div>
       <div className="splide" id="hero-splide">
         <div className="splide__arrows">
@@ -109,11 +55,11 @@ export function HeroSection() {
         </div>
         <div className="splide__track">
           <div className="splide__list">
-            {heroSlides.map((slide, index) => (
-              <div key={slide.slug} className={`splide__slide fit-${slide.fit}`}>
+            {slides.map((slide, index) => (
+              <div key={`${slide.productSlug}-${index}`} className={`splide__slide fit-${slide.fit}`}>
                 <Image
                   src={slide.image.src}
-                  alt={product(slide.slug).name}
+                  alt={slide.product.name}
                   width={slide.image.width}
                   height={slide.image.height}
                   className="shot"
@@ -128,8 +74,8 @@ export function HeroSection() {
         </div>
         <div className="carousel-indicator">
           <div className="carousel-steps">
-            {heroSlides.map((slide) => (
-              <button key={slide.step} type="button">
+            {slides.map((slide, index) => (
+              <button key={`${slide.step}-${index}`} type="button">
                 {slide.step}
               </button>
             ))}
@@ -147,22 +93,23 @@ export function HeroSection() {
   );
 }
 
-export function ReasonsSection() {
-  const robot = product("tru-50-3").images[0];
+export async function ReasonsSection() {
+  const { settings, product } = await getSiteData();
+  const robot = product("tru-50-3")?.images[0];
   return (
     <section id="autonomy-section">
       <div className="h2-wrapper">
-        <h2 className="h1">Neden TEKNOSEM?</h2>
+        <h2 className="h1">{settings.reasons.title}</h2>
       </div>
       <div className="autonomy-robot">
-        <Picture image={robot} alt="TRU-50-3 Parça Alma, Spreyleme ve Insert Uygulaması" sizes="(orientation: portrait) 90vw, 40vw" />
+        {robot && <Picture image={robot} alt="TRU-50-3 Parça Alma, Spreyleme ve Insert Uygulaması" sizes="(orientation: portrait) 90vw, 40vw" />}
       </div>
       <span className="blue-shade" aria-hidden />
       <span className="ellipse" aria-hidden />
       <div className="autonomy-details">
-        {reasons.map((reason) => (
-          <div key={reason.title} className="detail">
-            <IconBadge icon={reason.icon} className="img" />
+        {settings.reasons.items.map((reason, index) => (
+          <div key={index} className="detail">
+            <IconBadge icon={iconFor(reason.icon)} className="img" />
             <p>{reason.title}</p>
             <span>{reason.text}</span>
             <div className="autonomy-line" aria-hidden />
@@ -173,33 +120,33 @@ export function ReasonsSection() {
   );
 }
 
-export function StrengthsSection() {
-  const robot = product("robotik-polisaj").images[0];
+export async function StrengthsSection() {
+  const { settings, product, contact } = await getSiteData();
+  const { strengths } = settings;
+  const years = (text: string) => withYears(text, contact.experienceYears);
+  const robot = product("robotik-polisaj")?.images[0];
   return (
     <section id="redefining-section">
       <div className="head">
         <div className="h2-wrapper">
-          <h2 className="h1">Teknosem – Yüksek Teknoloji ile Geleceğe Yön Veriyoruz</h2>
+          <h2 className="h1">{years(strengths.title)}</h2>
         </div>
-        <p>{company.experienceYears} Yıllık Tecrübe ve İnovasyonun Gücüyle Yanınızdayız</p>
+        <p>{years(strengths.subtitle)}</p>
       </div>
       <div className="info">
-        <h2>TEKNOSEM</h2>
-        <span> Teknolojik Çözüm Ortağınız </span>
-        <p>
-          Kuruluşundan bu yana Teknosem, test ve analiz cihazları ile robotik otomasyon sistemleri alanında faaliyet göstermektedir. Üretim ve
-          yazılım süreçlerini kendi bünyesinde geliştirerek, müşterilerine anahtar teslim projeler sunmaktadır.
-        </p>
+        <h2>{strengths.heading}</h2>
+        <span> {strengths.tagline} </span>
+        <p>{years(strengths.text)}</p>
         <div className="splide">
           <div className="splide__track">
             <div className="splide__list">
-              {strengths.map((card) => (
-                <div key={card.title} className="splide__slide with-border">
+              {strengths.cards.map((card, index) => (
+                <div key={index} className="splide__slide with-border">
                   <strong className="shade" />
                   <strong className="shade" />
-                  <IconBadge icon={card.icon} className="icon" />
-                  <span> {card.title} </span>
-                  <p>{card.text}</p>
+                  <IconBadge icon={iconFor(card.icon)} className="icon" />
+                  <span> {years(card.title)} </span>
+                  <p>{years(card.text)}</p>
                 </div>
               ))}
             </div>
@@ -210,23 +157,28 @@ export function StrengthsSection() {
         </div>
       </div>
       <div className="redefining-robot">
-        <Picture image={robot} alt="Robotik Polisaj Uygulaması" className="img" sizes="(orientation: portrait) 90vw, 60vw" />
+        {robot && <Picture image={robot} alt="Robotik Polisaj Uygulaması" className="img" sizes="(orientation: portrait) 90vw, 60vw" />}
         <span className="ellipse" aria-hidden />
       </div>
     </section>
   );
 }
 
-export function ProductsSection() {
+export async function ProductsSection() {
+  const { settings, product } = await getSiteData();
+  const { showcase } = settings;
+  const items = showcase.items.flatMap((item) => {
+    const p = product(item.productSlug);
+    const image = p?.images[item.productImage] ?? p?.images[0];
+    return p && image ? [{ ...item, product: p, image }] : [];
+  });
   return (
     <section id="target-section">
       <div className="head">
         <div className="h2-wrapper overflow-hidden">
-          <h2 className="h1">Ürünlerimiz</h2>
+          <h2 className="h1">{showcase.title}</h2>
         </div>
-        <span>
-          Robotik sistemlerimiz, akademik bilgi ve mühendislik uzmanlığıyla endüstriyel üretimden sağlığa kadar geniş bir kullanım alanı sunar.
-        </span>
+        <span>{showcase.text}</span>
         <div className="all-products">
           <PrimaryButton href={productsHref}>Tüm Ürünleri Gör</PrimaryButton>
         </div>
@@ -235,8 +187,8 @@ export function ProductsSection() {
           <strong />
           <div className="steps-container">
             <div className="steps">
-              {showcase.map((item) => (
-                <span key={item.step}>{item.step}</span>
+              {items.map((item, index) => (
+                <span key={index}>{item.step}</span>
               ))}
             </div>
           </div>
@@ -245,18 +197,15 @@ export function ProductsSection() {
       <div className="splide">
         <div className="splide__track">
           <div className="list splide__list">
-            {showcase.map((item) => {
-              const p = product(item.slug);
-              return (
-                <div key={item.slug} className="item splide__slide">
-                  <p>
-                    <a href={productHref(p)}>{p.name}</a>
-                  </p>
-                  <span>{p.shortDescription}</span>
-                  <Picture image={p.images[item.image]} alt={p.name} className="media" sizes="(orientation: portrait) 80vw, 50vw" />
-                </div>
-              );
-            })}
+            {items.map((item, index) => (
+              <div key={index} className="item splide__slide">
+                <p>
+                  <a href={productHref(item.product)}>{item.product.name}</a>
+                </p>
+                <span>{item.product.shortDescription}</span>
+                <Picture image={item.image} alt={item.product.name} className="media" sizes="(orientation: portrait) 80vw, 50vw" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -267,8 +216,9 @@ export function ProductsSection() {
   );
 }
 
-export function ReferencesStrip() {
-  const logos = media.references.slice(0, 12);
+export async function ReferencesStrip() {
+  const logos = (await getSiteData()).logos.slice(0, 12);
+  if (logos.length === 0) return null;
   return (
     <section id="references-strip" aria-label="Referanslarımız">
       <div className="head">
@@ -281,7 +231,13 @@ export function ReferencesStrip() {
         <div className="marquee-track">
           {[...logos, ...logos].map((logo, index) => (
             <span key={`${logo.src}-${index}`} className="logo-tile" aria-hidden={index >= logos.length}>
-              <Image src={logo.src} alt={index < logos.length ? "Teknosem referansı" : ""} width={logo.width} height={logo.height} sizes="160px" />
+              <Image
+                src={logo.src}
+                alt={index < logos.length ? logo.alt || "Teknosem referansı" : ""}
+                width={logo.width}
+                height={logo.height}
+                sizes="160px"
+              />
             </span>
           ))}
         </div>

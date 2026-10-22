@@ -6,12 +6,25 @@ import { legacyRedirects } from "./src/components/sites/teknosem/slugs";
 
 const noindex = { key: "X-Robots-Tag", value: "noindex, nofollow" };
 
+/** Product images, manuals and reference logos are served from Supabase Storage. */
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+
 const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
+  // A stray package-lock.json in a parent folder would otherwise be taken as the workspace root.
+  outputFileTracingRoot: __dirname,
+  turbopack: { root: __dirname },
   // The old WordPress URLs end in "/". Next's built-in slash redirect (308) would run before the legacy
   // table and turn every old link into a 308 -> 301 chain, so slashes are handled in redirects() instead.
   skipTrailingSlashRedirect: true,
+  images: {
+    remotePatterns: supabaseUrl ? [new URL(`${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/**`)] : [],
+  },
+  experimental: {
+    // Panel image uploads are resized in the browser first; this only leaves headroom for large originals.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   async redirects() {
     return [
       // Old teknosem.com.tr/robotik/... links, once the main site forwards them here with the path kept.

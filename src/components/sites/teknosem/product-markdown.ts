@@ -1,4 +1,4 @@
-// Renders the product tab markdown exported from the old WordPress site.
+// Parses the product tab markdown exported from the old WordPress site (used by the Supabase import script).
 // The export only uses headings, paragraphs, "- " lists, line-per-item lists, pipe tables and a FAQ block.
 
 export type Block =
@@ -76,48 +76,4 @@ export function parseTab(markdown: string, tabTitle: string): { blocks: Block[];
   }
 
   return { blocks, faq, faqTitle };
-}
-
-export function MarkdownBlocks({ blocks }: { blocks: Block[] }) {
-  return (
-    <div className="product-prose">
-      {blocks.map((block, index) => {
-        switch (block.type) {
-          case "heading":
-            return block.level <= 2 ? <h2 key={index}>{block.text}</h2> : <h3 key={index}>{block.text}</h3>;
-          case "paragraph":
-            return <p key={index}>{block.text}</p>;
-          case "list":
-            return (
-              <ul key={index}>
-                {block.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            );
-          case "table":
-            return (
-              <table key={index} className="spec-table">
-                <tbody>
-                  {block.rows.map(([label, value], rowIndex) =>
-                    value ? (
-                      <tr key={rowIndex}>
-                        <th scope="row">{label}</th>
-                        <td>{value}</td>
-                      </tr>
-                    ) : (
-                      <tr key={rowIndex} className="group-row">
-                        <th scope="rowgroup" colSpan={2}>
-                          {label}
-                        </th>
-                      </tr>
-                    ),
-                  )}
-                </tbody>
-              </table>
-            );
-        }
-      })}
-    </div>
-  );
 }

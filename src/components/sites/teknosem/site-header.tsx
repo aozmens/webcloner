@@ -3,7 +3,7 @@
 import { ArrowRight, ChevronDown, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { company, corporateLinks, pageHref, pages } from "./company";
+import { corporateLinks, pageHref, pages } from "./company";
 import { TeknosemLogo } from "./logo";
 import type { NavData, NavGroup } from "./nav-data";
 import { ProductThumb } from "./primitives";
@@ -83,7 +83,7 @@ export function SiteHeader({ activeHome, nav }: { activeHome: boolean; nav: NavD
           </button>
           <Search nav={nav} />
           <span />
-          <a href={company.whatsappHref} target="_blank" rel="noopener" aria-label="WhatsApp ile yazın">
+          <a href={nav.whatsappHref} target="_blank" rel="noopener" aria-label="WhatsApp ile yazın">
             <MessageCircle aria-hidden />
           </a>
           <a href={pageHref("quote")} className="quote-link">

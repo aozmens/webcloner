@@ -1,5 +1,6 @@
-// Teknosem content layer. Raw data comes from docs/teknosem-icerik via scripts/teknosem/build-content.mjs;
-// every correction applied on top of it is listed in `corrections` so it stays reviewable.
+// Seed content: the exported Teknosem data (docs/teknosem-icerik → scripts/teknosem/build-content.mjs) with the
+// agreed corrections applied. Only scripts/teknosem/import-to-supabase.mts reads it; the site reads Supabase.
+// Every correction applied on top of the export is listed in `corrections` so it stays reviewable.
 
 import mediaJson from "./content/media.json";
 import productsJson from "./content/products.json";
@@ -7,10 +8,8 @@ import { catalog, shortNames, type CatalogCategory, type CatalogGroup } from "./
 import { productOverrides, type ManualInfo } from "./product-overrides";
 import { productSlugs } from "./slugs";
 
-export { company, corporateLinks, pageHref, pages, SOURCE_ORIGIN, type PageKey } from "./company";
-
 export type Manual = ManualInfo & { name: string; src: string };
-export type ImageAsset = { src: string; width: number; height: number };
+type ImageAsset = { src: string; width: number; height: number };
 export type ProductTab = { title: string; markdown: string; videos: string[] };
 export type Product = {
   no: number;
@@ -77,10 +76,8 @@ export const products: Product[] = (productsJson as RawProduct[]).map((raw) => {
   };
 });
 
-export const media = mediaJson as Record<
-  "home" | "about" | "contact" | "products" | "references",
-  ImageAsset[]
->;
+/** Reference logos exported from the old site (now managed in the panel). */
+export const referenceLogos = (mediaJson as { references: ImageAsset[] }).references;
 
 export function product(slug: string): Product {
   const found = products.find((p) => p.slug === slug);
@@ -90,38 +87,10 @@ export function product(slug: string): Product {
 
 export const shortName = (p: Product) => shortNames[p.slug] ?? p.name;
 
-/**
- * İndirmeler list, derived from the product data so it only links to files that exist and follows the
- * per-product decisions (e.g. TY-1000 → TY-1000_V1.12, no TK-5 manual under TK-7).
- */
-export const manuals = products.flatMap((p) => p.documents.map((doc) => ({ ...doc, product: p })));
-
-/** First sentence of a text, used where the layout only has room for a lead sentence. */
-export function leadSentence(text: string) {
-  const match = text.trim().match(/^.*?[.!?](?=\s|$)/);
-  return (match ? match[0] : text).trim();
-}
-
-export const productHref = (p: Product) => `/urun/${p.slug}`;
-export const productsHref = "/urunler";
-export const categoryHref = (category: CatalogCategory, group?: CatalogGroup) =>
-  `/urunler/${category.slug}${group ? `#${group.slug}` : ""}`;
-
 export { catalog };
 export type { CatalogCategory, CatalogGroup };
 
-export const categoryBySlug = (slug: string) => catalog.find((category) => category.slug === slug);
-
-/** Where a product sits in the catalog, plus the other products of its group. */
-export function productPlacement(slug: string) {
-  for (const category of catalog) {
-    const group = category.groups.find((g) => g.products.includes(slug));
-    if (group) return { category, group, siblings: group.products.filter((s) => s !== slug).map(product) };
-  }
-  throw new Error(`Teknosem product is missing from the catalog: ${slug}`);
-}
-
-// Every product must appear exactly once in the catalog, so menus and /urunler never drop one.
+// Every product must appear exactly once in the catalog, so the import places each one in exactly one group.
 const listed = catalog.flatMap((category) => category.groups.flatMap((group) => group.products));
 for (const p of products) {
   if (listed.filter((slug) => slug === p.slug).length !== 1) throw new Error(`Catalog must list ${p.slug} exactly once`);

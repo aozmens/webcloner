@@ -41,6 +41,14 @@
 .product-prose ul{display:grid;gap:calc(var(--fs) * .55);padding-left:0;list-style:none;margin:calc(var(--fs) * .5) 0 calc(var(--fs) * 1)}
 .product-prose li{position:relative;padding-left:calc(var(--fs) * 1.5)}
 .product-prose li:before{content:"";position:absolute;left:0;top:.62em;width:calc(var(--fs) * .5);height:calc(var(--fs) * .5);border-radius:50%;background:var(--MAIN-BLUE)}
+/* Panel editor output: numbered lists, list items wrapped in <p>, inline formatting and links. */
+.product-prose ol{display:grid;gap:calc(var(--fs) * .55);padding-left:calc(var(--fs) * 1.5);margin:calc(var(--fs) * .5) 0 calc(var(--fs) * 1)}
+.product-prose ol li{padding-left:calc(var(--fs) * .25)}
+.product-prose ol li:before{display:none}
+.product-prose li>p{margin:0}
+.product-prose strong,.product-prose b{color:#fff;font-weight:600}
+.product-prose a{color:var(--MAIN-BLUE);text-decoration:underline!important}
+.product-prose blockquote{border-left:2px solid var(--MAIN-BLUE);padding-left:calc(var(--fs) * 1)}
 
 .spec-table{width:100%;max-width:calc(var(--fs) * 56);border-collapse:collapse;font-size:calc(var(--fs) * 1.125)}
 .spec-table th,.spec-table td{padding:calc(var(--fs) * .9) calc(var(--fs) * 1.2);border-bottom:1px solid #2a2a2a;text-align:left;vertical-align:top}

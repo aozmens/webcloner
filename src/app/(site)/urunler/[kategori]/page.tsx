@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogPage } from "@/components/sites/teknosem/catalog-page";
-import { catalog, categoryBySlug } from "@/components/sites/teknosem/content";
+import { getSiteData } from "@/components/sites/teknosem/site-data";
 import { siteUrl } from "@/components/sites/teknosem/site-config";
 import { SiteShell } from "@/components/sites/teknosem/site-shell";
 import "@/components/sites/teknosem/product.css";
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return catalog.map((category) => ({ kategori: category.slug }));
+export async function generateStaticParams() {
+  return (await getSiteData()).catalog.map((category) => ({ kategori: category.slug }));
 }
 
+const findCategory = async (slug: string) => (await getSiteData()).catalog.find((category) => category.slug === slug);
+
 export async function generateMetadata({ params }: { params: Promise<{ kategori: string }> }): Promise<Metadata> {
-  const category = categoryBySlug((await params).kategori);
+  const category = await findCategory((await params).kategori);
   if (!category) return {};
   return {
     title: `${category.title} - Teknosem`,
@@ -23,8 +23,9 @@ export async function generateMetadata({ params }: { params: Promise<{ kategori:
 }
 
 export default async function Page({ params }: { params: Promise<{ kategori: string }> }) {
-  const category = categoryBySlug((await params).kategori);
+  const category = await findCategory((await params).kategori);
   if (!category) notFound();
+  const { catalog } = await getSiteData();
   return (
     <SiteShell page="listing">
       <CatalogPage categories={catalog} current={category} />

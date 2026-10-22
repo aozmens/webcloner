@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import type { ImageAsset } from "./content";
+import type { ImageAsset } from "./media";
 
 export function ProductGallery({ images, name }: { images: ImageAsset[]; name: string }) {
   const [active, setActive] = useState(0);
   const current = images[active];
+  if (!current) return <div className="product-gallery" />;
 
   return (
     <div className="product-gallery">
@@ -14,7 +15,7 @@ export function ProductGallery({ images, name }: { images: ImageAsset[]; name: s
         <Image
           key={current.src}
           src={current.src}
-          alt={`${name} — görsel ${active + 1}`}
+          alt={current.alt || `${name} — görsel ${active + 1}`}
           width={current.width}
           height={current.height}
           sizes="(orientation: portrait) 92vw, 46vw"

@@ -19,3 +19,4 @@ export const LEGACY_BASE = "/robotik";
 
 /** Admin panel; never indexed. */
 export const ADMIN_PATH = "/yonetim";
+export const ADMIN_LOGIN_PATH = `${ADMIN_PATH}/giris`;
