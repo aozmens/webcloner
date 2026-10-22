@@ -54,18 +54,20 @@ export function SettingsForm<K extends SettingKey>({
   );
 }
 
-export function TextInput({ label, value, onChange, hint }: { label: string; value: string; onChange: (value: string) => void; hint?: ReactNode }) {
+type TextFieldProps = { label: string; value: string; onChange: (value: string) => void; hint?: ReactNode; placeholder?: string };
+
+export function TextInput({ label, value, onChange, hint, placeholder }: TextFieldProps) {
   return (
     <Field label={label} hint={hint}>
-      <input className={inputClass} value={value} onChange={(event) => onChange(event.target.value)} />
+      <input className={inputClass} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
     </Field>
   );
 }
 
-export function TextArea({ label, value, onChange, hint, rows = 4 }: { label: string; value: string; onChange: (value: string) => void; hint?: ReactNode; rows?: number }) {
+export function TextArea({ label, value, onChange, hint, placeholder, rows = 4 }: TextFieldProps & { rows?: number }) {
   return (
     <Field label={label} hint={hint}>
-      <textarea className={inputClass} rows={rows} value={value} onChange={(event) => onChange(event.target.value)} />
+      <textarea className={inputClass} rows={rows} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
     </Field>
   );
 }

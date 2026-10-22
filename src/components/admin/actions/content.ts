@@ -2,7 +2,7 @@
 
 import type { Json } from "@/lib/supabase/database.types";
 import { mediaUrl } from "@/lib/supabase/media";
-import { readSetting, settingKeys, type SettingKey, type Settings } from "@/components/sites/teknosem/settings";
+import { isSafeHref, readSetting, settingKeys, type SettingKey, type Settings } from "@/components/sites/teknosem/settings";
 import { requireAdmin } from "../auth";
 import { MAX_EDGE, removeFiles, uploadImage } from "../media-server";
 import { dbMessage, fail, refreshSite, type ActionResult } from "../result";
@@ -15,6 +15,17 @@ export async function saveSetting<K extends SettingKey>(key: K, value: Settings[
     const contact = clean as Settings["contact"];
     if (!contact.phone.trim() || !contact.email.trim()) return fail("Telefon ve e-posta boş olamaz.");
     if (contact.whatsapp.replace(/\D/g, "").length < 10) return fail("WhatsApp numarasını ülke koduyla yazın (ör. +90 545 829 06 52).");
+  }
+  if (key === "hero") {
+    const slides = (clean as Settings["hero"]).slides;
+    for (const [index, slide] of slides.entries()) {
+      const name = `Slayt ${index + 1}`;
+      if (!slide.productSlug && !slide.image.src) return fail(`${name}: ürün seçilmediği için bir görsel yükleyin.`);
+      if (!slide.productSlug && !slide.title.trim()) return fail(`${name}: ürün seçilmediği için bir başlık yazın.`);
+      if (slide.buttonHref.trim() && !isSafeHref(slide.buttonHref.trim())) {
+        return fail(`${name}: düğme bağlantısı "/" ile (ör. /iletisim) ya da https:// ile başlamalı.`);
+      }
+    }
   }
   const { supabase } = await requireAdmin();
   const { error } = await supabase.from("site_settings").upsert({ key, value: clean as unknown as Json });

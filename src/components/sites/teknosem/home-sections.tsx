@@ -4,7 +4,7 @@ import { iconFor } from "./icons";
 import { leadSentence, pageHref, pages, productHref, productsHref } from "./links";
 import { media, mediaByName } from "./media";
 import { LineElement, Picture, PrimaryButton } from "./primitives";
-import { withYears } from "./settings";
+import { isSafeHref, withYears } from "./settings";
 import { getSiteData, settingImage } from "./site-data";
 
 function IconBadge({ icon: Icon, className }: { icon: LucideIcon; className: string }) {
@@ -26,11 +26,26 @@ function ProgressBar({ id, variant }: { id: string; variant: "mobile-horizontal 
 
 export async function HeroSection() {
   const { settings, product } = await getSiteData();
-  // Slides whose product is unpublished (or has no image) are skipped.
+  // A slide may stand on its own or take its texts from a product. Slides whose product is unpublished, and slides
+  // left without an image or a title, are skipped.
   const slides = settings.hero.slides.flatMap((slide) => {
-    const p = product(slide.productSlug);
+    const p = slide.productSlug ? product(slide.productSlug) : undefined;
+    if (slide.productSlug && !p) return [];
     const image = settingImage(slide.image, p);
-    return p && image ? [{ ...slide, product: p, image, fit: slide.fit === "contain" ? "contain" : "cover" }] : [];
+    const title = slide.title.trim() || p?.name || "";
+    if (!image || !title) return [];
+    const ownHref = slide.buttonHref.trim();
+    const href = ownHref && isSafeHref(ownHref) ? ownHref : p ? productHref(p) : "";
+    return [
+      {
+        ...slide,
+        image,
+        title,
+        text: slide.text.trim() || (p ? leadSentence(p.shortDescription) : ""),
+        button: href ? { href, label: slide.buttonLabel.trim() || "İncele", external: /^https?:/i.test(href) } : null,
+        fit: slide.fit === "contain" ? "contain" : "cover",
+      },
+    ];
   });
   return (
     <section id="hero-section">
@@ -38,9 +53,13 @@ export async function HeroSection() {
         {slides.map((slide, index) => (
           <div key={`${slide.productSlug}-${index}`} className={index === 0 ? "content active" : "content"}>
             <LineElement> {slide.eyebrow} </LineElement>
-            <h1 className="title h1">{slide.product.name}</h1>
-            <p className="paragraph-1">{leadSentence(slide.product.shortDescription)}</p>
-            <PrimaryButton href={productHref(slide.product)}>İncele</PrimaryButton>
+            <h1 className="title h1">{slide.title}</h1>
+            {slide.text && <p className="paragraph-1">{slide.text}</p>}
+            {slide.button && (
+              <PrimaryButton href={slide.button.href} external={slide.button.external}>
+                {slide.button.label}
+              </PrimaryButton>
+            )}
           </div>
         ))}
       </div>
@@ -59,7 +78,7 @@ export async function HeroSection() {
               <div key={`${slide.productSlug}-${index}`} className={`splide__slide fit-${slide.fit}`}>
                 <Image
                   src={slide.image.src}
-                  alt={slide.product.name}
+                  alt={slide.title}
                   width={slide.image.width}
                   height={slide.image.height}
                   className="shot"

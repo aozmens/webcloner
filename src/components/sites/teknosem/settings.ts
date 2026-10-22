@@ -13,10 +13,19 @@ import { media, mediaByName } from "./media";
 /** A slide image: an uploaded or static file (`src`), or else image number `productImage` of the slide's product. */
 export type SettingImage = { src: string; width: number; height: number; productImage: number };
 
+/**
+ * A hero slide. `productSlug` is optional: a slide without a product needs its own image and title. With a product,
+ * empty texts fall back to the product (name, first sentence of the short description, "İncele" to its page).
+ */
 export type HeroSlide = {
   productSlug: string;
   eyebrow: string;
   step: string;
+  title: string;
+  text: string;
+  buttonLabel: string;
+  /** "/iletisim" style site path or an https:// address. Empty: the product page, or no button without a product. */
+  buttonHref: string;
   image: SettingImage;
   /** "contain" shows renders shot on white whole on a white slide instead of cropping them. */
   fit: string;
@@ -53,16 +62,18 @@ export const settingKeys = ["hero", "reasons", "strengths", "showcase", "about",
 
 const file = (image: { src: string; width: number; height: number }): SettingImage => ({ ...image, productImage: 0 });
 const productImage = (index: number): SettingImage => ({ src: "", width: 0, height: 0, productImage: index });
+/** Texts taken from the slide's product. */
+const fromProduct = { title: "", text: "", buttonLabel: "", buttonHref: "" };
 
 const [kvkkTitle, ...kvkkBody] = kvkkJson as string[];
 
 export const defaultSettings: Settings = {
   hero: {
     slides: [
-      { productSlug: "ty-1000", eyebrow: "Spreyleme Üniteleri", step: "TY-1000", image: file(mediaByName(media.products, "deneme-15")), fit: "cover", position: "50% 45%" },
-      { productSlug: "tru-13", eyebrow: "Robotik Uygulamalar", step: "TRU-13", image: file(mediaByName(media.home, "katalog-karakaya")), fit: "cover", position: "" },
-      { productSlug: "ilc-cell", eyebrow: "Robotik Lazer Sistemleri", step: "iLC-Cell", image: productImage(0), fit: "contain", position: "" },
-      { productSlug: "tk-5", eyebrow: "Otomatik Kepçe Sistemleri", step: "TK-5", image: productImage(1), fit: "contain", position: "" },
+      { productSlug: "ty-1000", eyebrow: "Spreyleme Üniteleri", step: "TY-1000", ...fromProduct, image: file(mediaByName(media.products, "deneme-15")), fit: "cover", position: "50% 45%" },
+      { productSlug: "tru-13", eyebrow: "Robotik Uygulamalar", step: "TRU-13", ...fromProduct, image: file(mediaByName(media.home, "katalog-karakaya")), fit: "cover", position: "" },
+      { productSlug: "ilc-cell", eyebrow: "Robotik Lazer Sistemleri", step: "iLC-Cell", ...fromProduct, image: productImage(0), fit: "contain", position: "" },
+      { productSlug: "tk-5", eyebrow: "Otomatik Kepçe Sistemleri", step: "TK-5", ...fromProduct, image: productImage(1), fit: "contain", position: "" },
     ],
   },
   reasons: {
@@ -221,6 +232,9 @@ export const paragraphs = (text: string) =>
     .filter(Boolean);
 
 export const withYears = (text: string, years: number) => text.replaceAll("{yıl}", String(years));
+
+/** Slide button links may only point inside the site ("/iletisim") or to an http(s) address. */
+export const isSafeHref = (href: string) => /^\/(?!\/)/.test(href) || /^https?:\/\/[^\s]+$/i.test(href);
 
 /** Contact settings plus the links derived from them. */
 export function contactInfo(contact: Settings["contact"]) {

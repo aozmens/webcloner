@@ -9,13 +9,28 @@ import { shrinkImage } from "./resize-image";
 import { IconCardsEditor, ListControls, moveItem, SettingsForm, TextArea, TextInput, YEARS_HINT } from "./settings-form";
 import { buttonClass, Field, inputClass, Notice } from "./ui";
 
-export type ProductChoice = { slug: string; name: string; images: string[] };
+export type ProductChoice = { slug: string; name: string; images: string[]; lead: string };
 
-function ProductSelect({ value, products, onChange }: { value: string; products: ProductChoice[]; onChange: (slug: string) => void }) {
+function ProductSelect({
+  value,
+  products,
+  onChange,
+  noneLabel,
+  hint = "Başlık, kısa açıklama ve “İncele” bağlantısı bu üründen gelir.",
+}: {
+  value: string;
+  products: ProductChoice[];
+  onChange: (slug: string) => void;
+  /** Offers an empty choice with this label; without it a product must be picked. */
+  noneLabel?: string;
+  hint?: string;
+}) {
+  const known = products.some((p) => p.slug === value);
   return (
-    <Field label="Ürün" hint="Başlık, kısa açıklama ve “İncele” bağlantısı bu üründen gelir.">
+    <Field label="Ürün" hint={hint}>
       <select className={inputClass} value={value} onChange={(event) => onChange(event.target.value)}>
-        {!products.some((p) => p.slug === value) && <option value={value}>{value ? `${value} (bulunamadı)` : "Seçin…"}</option>}
+        {noneLabel !== undefined && <option value="">{noneLabel}</option>}
+        {!known && (value || noneLabel === undefined) && <option value={value}>{value ? `${value} (bulunamadı)` : "Seçin…"}</option>}
         {products.map((product) => (
           <option key={product.slug} value={product.slug}>
             {product.name}
@@ -51,8 +66,10 @@ function ProductImagePicker({ product, value, onChange }: { product?: ProductCho
 function SlideEditor({ slide, products, onChange }: { slide: HeroSlide; products: ProductChoice[]; onChange: (slide: HeroSlide) => void }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const product = products.find((p) => p.slug === slide.productSlug);
+  const product = slide.productSlug ? products.find((p) => p.slug === slide.productSlug) : undefined;
+  const standalone = !slide.productSlug;
   const ownImage = Boolean(slide.image.src);
+  const fallback = (text: string) => (product && text ? `Boş bırakılırsa: ${text}` : undefined);
 
   const upload = async (file: File | undefined) => {
     if (!file) return;
@@ -68,9 +85,46 @@ function SlideEditor({ slide, products, onChange }: { slide: HeroSlide; products
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <ProductSelect value={slide.productSlug} products={products} onChange={(productSlug) => onChange({ ...slide, productSlug })} />
+      <ProductSelect
+        value={slide.productSlug}
+        products={products}
+        noneLabel="Ürün yok (bağımsız slayt)"
+        hint={standalone ? "Başlık, açıklama, görsel ve düğmeyi aşağıda siz belirlersiniz." : "Boş bıraktığınız başlık, açıklama ve düğme bu üründen gelir."}
+        onChange={(productSlug) => onChange({ ...slide, productSlug })}
+      />
       <TextInput label="Üst etiket" value={slide.eyebrow} onChange={(eyebrow) => onChange({ ...slide, eyebrow })} hint="Başlığın üstündeki küçük yazı." />
+      <TextInput
+        label={standalone ? "Başlık *" : "Başlık"}
+        value={slide.title}
+        placeholder={product?.name}
+        onChange={(title) => onChange({ ...slide, title })}
+        hint={standalone ? "Zorunlu." : fallback(product?.name ?? "")}
+      />
       <TextInput label="Alt gezinme adı" value={slide.step} onChange={(step) => onChange({ ...slide, step })} hint="Slayt altındaki düğmede görünür (ör. TY-1000)." />
+      <div className="sm:col-span-2">
+        <TextArea
+          label="Açıklama"
+          rows={2}
+          value={slide.text}
+          placeholder={product?.lead}
+          onChange={(text) => onChange({ ...slide, text })}
+          hint={standalone ? "İsteğe bağlı. Başlığın altındaki kısa metin." : "Boş bırakılırsa ürünün kısa açıklamasının ilk cümlesi gösterilir."}
+        />
+      </div>
+      <TextInput
+        label="Düğme yazısı"
+        value={slide.buttonLabel}
+        placeholder="İncele"
+        onChange={(buttonLabel) => onChange({ ...slide, buttonLabel })}
+        hint="Boş bırakılırsa “İncele”."
+      />
+      <TextInput
+        label="Düğme bağlantısı"
+        value={slide.buttonHref}
+        placeholder={product ? `/urun/${product.slug}` : "/iletisim veya https://…"}
+        onChange={(buttonHref) => onChange({ ...slide, buttonHref })}
+        hint={standalone ? "Site içi adres (/iletisim) ya da https:// ile başlayan adres. Boş bırakılırsa düğme gösterilmez." : "Boş bırakılırsa ürün sayfası."}
+      />
       <Field label="Görsel yerleşimi">
         <select className={inputClass} value={slide.fit} onChange={(event) => onChange({ ...slide, fit: event.target.value })}>
           <option value="cover">Tam ekran (fotoğraf)</option>
@@ -79,17 +133,21 @@ function SlideEditor({ slide, products, onChange }: { slide: HeroSlide; products
       </Field>
       <div className="space-y-2 sm:col-span-2">
         <p className="text-sm font-medium">Görsel</p>
-        <div className="flex flex-wrap gap-4 text-sm">
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={!ownImage} onChange={() => onChange({ ...slide, image: { src: "", width: 0, height: 0, productImage: slide.image.productImage } })} />
-            Ürün görsellerinden seç
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={ownImage} onChange={() => !ownImage && setError("Kendi görselinizi kullanmak için aşağıdan bir dosya yükleyin.")} />
-            Ayrı görsel yükle
-          </label>
-        </div>
-        {ownImage ? (
+        {!standalone && (
+          <div className="flex flex-wrap gap-4 text-sm">
+            <label className="flex items-center gap-2">
+              <input type="radio" checked={!ownImage} onChange={() => onChange({ ...slide, image: { src: "", width: 0, height: 0, productImage: slide.image.productImage } })} />
+              Ürün görsellerinden seç
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" checked={ownImage} onChange={() => !ownImage && setError("Kendi görselinizi kullanmak için aşağıdan bir dosya yükleyin.")} />
+              Ayrı görsel yükle
+            </label>
+          </div>
+        )}
+        {standalone && !ownImage ? (
+          <p className="text-sm text-neutral-500">Ürün seçilmediği için bir görsel yükleyin (zorunlu).</p>
+        ) : ownImage ? (
           <div className="flex flex-wrap items-end gap-3">
             <img src={slide.image.src} alt="" className="h-28 rounded bg-neutral-100 object-contain" />
             <span className="text-xs text-neutral-500">
@@ -121,7 +179,12 @@ function SlideEditor({ slide, products, onChange }: { slide: HeroSlide; products
 export function HomeEditor({ settings, products }: { settings: Settings; products: ProductChoice[] }) {
   return (
     <div className="space-y-6">
-      <SettingsForm settingKey="hero" initial={settings.hero} title="Hero slaytları" description="Ana sayfanın en üstündeki kayan bölüm. Yayında olmayan ürünlerin slaytları gösterilmez.">
+      <SettingsForm
+        settingKey="hero"
+        initial={settings.hero}
+        title="Hero slaytları"
+        description="Ana sayfanın en üstündeki kayan bölüm. Slayt bir ürüne bağlanabilir ya da kendi görseli ve metniyle tek başına durabilir. Yayında olmayan ürünlerin slaytları gösterilmez."
+      >
         {(hero, set) => (
           <div className="space-y-4">
             {hero.slides.map((slide, index) => (
@@ -146,7 +209,18 @@ export function HomeEditor({ settings, products }: { settings: Settings; product
                 set({
                   slides: [
                     ...hero.slides,
-                    { productSlug: products[0]?.slug ?? "", eyebrow: "", step: "", image: { src: "", width: 0, height: 0, productImage: 0 }, fit: "contain", position: "" },
+                    {
+                      productSlug: "",
+                      eyebrow: "",
+                      step: "",
+                      title: "",
+                      text: "",
+                      buttonLabel: "",
+                      buttonHref: "",
+                      image: { src: "", width: 0, height: 0, productImage: 0 },
+                      fit: "cover",
+                      position: "",
+                    },
                   ],
                 })
               }
