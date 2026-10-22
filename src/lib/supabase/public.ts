@@ -13,6 +13,9 @@ export function createPublicClient() {
   }
   return createClient<Database>(publicEnv.supabaseUrl, publicEnv.supabaseAnonKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    global: { fetch: (input, init) => fetch(input, { ...init, cache: "force-cache", next: { tags: [CONTENT_TAG] } }) },
+    global: {
+      headers: { "x-teknosem-build": process.env.TEKNOSEM_BUILD_ID ?? "" },
+      fetch: (input, init) => fetch(input, { ...init, cache: "force-cache", next: { tags: [CONTENT_TAG] } }),
+    },
   });
 }

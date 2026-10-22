@@ -12,6 +12,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
 const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
+  // Inlined at build time and sent with every Supabase read (lib/supabase/public.ts). The fetch cache key includes
+  // headers, so each build starts from fresh data instead of reusing responses cached by an earlier deployment.
+  env: { TEKNOSEM_BUILD_ID: Date.now().toString(36) },
   // A stray package-lock.json in a parent folder would otherwise be taken as the workspace root.
   outputFileTracingRoot: __dirname,
   turbopack: { root: __dirname },
